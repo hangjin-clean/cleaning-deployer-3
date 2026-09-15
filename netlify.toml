@@ -1,5 +1,5 @@
 [build]
-  command = "python3 gen.py && python3 gwacheon_v1_addon.py && python3 national_bulk.py"
+  command = "python3 gen.py && python3 gwacheon_v1_addon.py && python3 national_bulk.py && python3 admin_publish.py"
   publish = "out_gangnam"
 
 [build.environment]

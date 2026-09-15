@@ -1,0 +1,32 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>청소배포 3호 관리자</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb;font-family:Arial,'Noto Sans KR',sans-serif;color:#111}
+.wrap{max-width:1050px;margin:35px auto;padding:18px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:24px;margin-bottom:16px}
+h1{margin:0 0 8px}.sub{color:#68707d}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-weight:700;margin-bottom:7px}select,input{width:100%;padding:13px;border:1px solid #ccd2dc;border-radius:11px;font-size:15px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:10px 13px;border:1px solid #ccd2dc;border-radius:11px;background:#fff;cursor:pointer}
+.chip.on{border-color:#4f46ff;background:#f0efff}.btn{padding:14px 20px;border:0;border-radius:12px;background:#4f46ff;color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+.btn:disabled{opacity:.5}.count{font-size:28px;font-weight:900;color:#4f46ff}.warn{padding:12px;border-radius:10px;background:#fff8df;color:#745c00}
+pre{white-space:pre-wrap;background:#111827;color:#f9fafb;border-radius:12px;padding:16px;min-height:120px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+</style></head><body><main class="wrap">
+<div class="card"><h1>청소배포 3호 관리자</h1><div class="sub">전국 지역 × 19개 업종 × 제목 5개 · 최대 8,000페이지</div></div>
+<div class="card grid">
+<div><label>지역 범위</label><select id="region"><option value="all">전국</option><option value="seoul">서울</option><option value="gyeonggi">경기</option><option value="metro">광역시</option></select></div>
+<div><label>업종</label><select id="service"><option value="all">19개 전체</option><option>병원청소</option><option>사무실청소</option><option>학원청소</option><option>계단청소</option></select></div>
+</div>
+<div class="card"><label>생성 개수</label><div class="chips" id="limits">
+<button class="chip on" data-n="100">100</button><button class="chip" data-n="1000">1,000</button>
+<button class="chip" data-n="5000">5,000</button><button class="chip" data-n="8000">8,000</button></div>
+<p>선택 생성 수: <span class="count" id="count">100</span>개</p>
+<div class="warn">현재 v1은 관리자 화면과 배포 요청값 생성까지 제공합니다. GitHub/Netlify 비밀키를 브라우저에 노출하지 않기 위해 실제 배포 실행은 서버 연결 단계에서 활성화합니다.</div></div>
+<div class="card"><button class="btn" id="preview">배포 설정 만들기</button></div>
+<div class="card"><label>배포 요청 미리보기</label><pre id="log">지역과 수량을 선택한 뒤 '배포 설정 만들기'를 누르세요.</pre></div>
+</main><script>
+let limit=100;
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');limit=+b.dataset.n;count.textContent=limit.toLocaleString()});
+preview.onclick=()=>{const r=region.value,s=service.value;log.textContent=
+`3호 대량배포 요청\n지역범위: ${r}\n업종: ${s}\n생성수: ${limit.toLocaleString()}개\n제목변형: 5개\n랜딩: 기존 3호 템플릿\n최대제한: 8,000개\n\n다음 서버 연결 단계에서 이 요청값으로 Netlify 배포를 실행합니다.`}
+</script></body></html>
