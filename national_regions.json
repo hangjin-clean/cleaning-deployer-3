@@ -11,8 +11,8 @@
     "province": "서울특별시",
     "area": "중구",
     "display_full": "서울특별시 중구",
-    "title_short": "중",
-    "title_full": "중구",
+    "title_short": "서울 중구",
+    "title_full": "서울 중구",
     "slug": "r-08e10dadf8"
   },
   {
@@ -203,24 +203,24 @@
     "province": "부산광역시",
     "area": "중구",
     "display_full": "부산광역시 중구",
-    "title_short": "중구",
-    "title_full": "중구",
+    "title_short": "부산 중구",
+    "title_full": "부산 중구",
     "slug": "r-039869d148"
   },
   {
     "province": "부산광역시",
     "area": "서구",
     "display_full": "부산광역시 서구",
-    "title_short": "서구",
-    "title_full": "서구",
+    "title_short": "부산 서구",
+    "title_full": "부산 서구",
     "slug": "r-28cbbc559f"
   },
   {
     "province": "부산광역시",
     "area": "동구",
     "display_full": "부산광역시 동구",
-    "title_short": "동구",
-    "title_full": "동구",
+    "title_short": "부산 동구",
+    "title_full": "부산 동구",
     "slug": "r-4f43e95b61"
   },
   {
@@ -251,16 +251,16 @@
     "province": "부산광역시",
     "area": "남구",
     "display_full": "부산광역시 남구",
-    "title_short": "남구",
-    "title_full": "남구",
+    "title_short": "부산 남구",
+    "title_full": "부산 남구",
     "slug": "r-0d0c4bd25e"
   },
   {
     "province": "부산광역시",
     "area": "북구",
     "display_full": "부산광역시 북구",
-    "title_short": "북구",
-    "title_full": "북구",
+    "title_short": "부산 북구",
+    "title_full": "부산 북구",
     "slug": "r-31b0542116"
   },
   {
@@ -331,40 +331,40 @@
     "province": "대구광역시",
     "area": "중구",
     "display_full": "대구광역시 중구",
-    "title_short": "중구",
-    "title_full": "중구",
+    "title_short": "대구 중구",
+    "title_full": "대구 중구",
     "slug": "r-76bc22d13e"
   },
   {
     "province": "대구광역시",
     "area": "동구",
     "display_full": "대구광역시 동구",
-    "title_short": "동구",
-    "title_full": "동구",
+    "title_short": "대구 동구",
+    "title_full": "대구 동구",
     "slug": "r-01c264f24a"
   },
   {
     "province": "대구광역시",
     "area": "서구",
     "display_full": "대구광역시 서구",
-    "title_short": "서구",
-    "title_full": "서구",
+    "title_short": "대구 서구",
+    "title_full": "대구 서구",
     "slug": "r-3b77cb20a4"
   },
   {
     "province": "대구광역시",
     "area": "남구",
     "display_full": "대구광역시 남구",
-    "title_short": "남구",
-    "title_full": "남구",
+    "title_short": "대구 남구",
+    "title_full": "대구 남구",
     "slug": "r-867c11ca28"
   },
   {
     "province": "대구광역시",
     "area": "북구",
     "display_full": "대구광역시 북구",
-    "title_short": "북구",
-    "title_full": "북구",
+    "title_short": "대구 북구",
+    "title_full": "대구 북구",
     "slug": "r-1d6ff2d753"
   },
   {
@@ -403,16 +403,16 @@
     "province": "인천광역시",
     "area": "중구",
     "display_full": "인천광역시 중구",
-    "title_short": "중구",
-    "title_full": "중구",
+    "title_short": "인천 중구",
+    "title_full": "인천 중구",
     "slug": "r-bcaefbc9fd"
   },
   {
     "province": "인천광역시",
     "area": "동구",
     "display_full": "인천광역시 동구",
-    "title_short": "동구",
-    "title_full": "동구",
+    "title_short": "인천 동구",
+    "title_full": "인천 동구",
     "slug": "r-9bb684e3fb"
   },
   {
@@ -459,8 +459,8 @@
     "province": "인천광역시",
     "area": "서구",
     "display_full": "인천광역시 서구",
-    "title_short": "서구",
-    "title_full": "서구",
+    "title_short": "인천 서구",
+    "title_full": "인천 서구",
     "slug": "r-8760975942"
   },
   {
@@ -483,32 +483,32 @@
     "province": "광주광역시",
     "area": "동구",
     "display_full": "광주광역시 동구",
-    "title_short": "동구",
-    "title_full": "동구",
+    "title_short": "광주 동구",
+    "title_full": "광주 동구",
     "slug": "r-c8cb8556ab"
   },
   {
     "province": "광주광역시",
     "area": "서구",
     "display_full": "광주광역시 서구",
-    "title_short": "서구",
-    "title_full": "서구",
+    "title_short": "광주 서구",
+    "title_full": "광주 서구",
     "slug": "r-6f9a44999c"
   },
   {
     "province": "광주광역시",
     "area": "남구",
     "display_full": "광주광역시 남구",
-    "title_short": "남구",
-    "title_full": "남구",
+    "title_short": "광주 남구",
+    "title_full": "광주 남구",
     "slug": "r-29ff165310"
   },
   {
     "province": "광주광역시",
     "area": "북구",
     "display_full": "광주광역시 북구",
-    "title_short": "북구",
-    "title_full": "북구",
+    "title_short": "광주 북구",
+    "title_full": "광주 북구",
     "slug": "r-2c4dd2dd65"
   },
   {
@@ -523,24 +523,24 @@
     "province": "대전광역시",
     "area": "동구",
     "display_full": "대전광역시 동구",
-    "title_short": "동구",
-    "title_full": "동구",
+    "title_short": "대전 동구",
+    "title_full": "대전 동구",
     "slug": "r-44e9a10289"
   },
   {
     "province": "대전광역시",
     "area": "중구",
     "display_full": "대전광역시 중구",
-    "title_short": "중구",
-    "title_full": "중구",
+    "title_short": "대전 중구",
+    "title_full": "대전 중구",
     "slug": "r-e61f871814"
   },
   {
     "province": "대전광역시",
     "area": "서구",
     "display_full": "대전광역시 서구",
-    "title_short": "서구",
-    "title_full": "서구",
+    "title_short": "대전 서구",
+    "title_full": "대전 서구",
     "slug": "r-96709501eb"
   },
   {
@@ -563,32 +563,32 @@
     "province": "울산광역시",
     "area": "중구",
     "display_full": "울산광역시 중구",
-    "title_short": "중구",
-    "title_full": "중구",
+    "title_short": "울산 중구",
+    "title_full": "울산 중구",
     "slug": "r-87d82c8b5f"
   },
   {
     "province": "울산광역시",
     "area": "남구",
     "display_full": "울산광역시 남구",
-    "title_short": "남구",
-    "title_full": "남구",
+    "title_short": "울산 남구",
+    "title_full": "울산 남구",
     "slug": "r-7b590d5789"
   },
   {
     "province": "울산광역시",
     "area": "동구",
     "display_full": "울산광역시 동구",
-    "title_short": "동구",
-    "title_full": "동구",
+    "title_short": "울산 동구",
+    "title_full": "울산 동구",
     "slug": "r-462ad61c70"
   },
   {
     "province": "울산광역시",
     "area": "북구",
     "display_full": "울산광역시 북구",
-    "title_short": "북구",
-    "title_full": "북구",
+    "title_short": "울산 북구",
+    "title_full": "울산 북구",
     "slug": "r-0db98c9e64"
   },
   {
