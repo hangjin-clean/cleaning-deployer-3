@@ -690,3 +690,93 @@ def build():
 
 if __name__ == '__main__':
     build()
+
+
+# ===== 3호 전국형 1차 검증: 경기도 과천시 =====
+# 메인(/)과 기존 강남 페이지는 그대로 두고, 과천시 테스트 페이지만 별도 생성한다.
+def _gwacheon_title5(service_key, service_label):
+    custom = {
+        "office": ["과천 사무실청소 업체추천","과천시 사무실 정기청소 업체","과천 사무실청소 전문업체","과천시 사무실청소업체 비용안내","과천시 사무실 정기관리 청소업체"],
+        "hospital": ["과천 병원청소 업체추천","과천시 병원청소 업체비용","과천 병원정기청소 전문업체","과천시 병원청소업체","과천 개인병원청소 업체추천"],
+        "academy": ["과천 학원청소 업체추천","과천시 학원 정기청소 업체","과천 학원청소 전문업체","과천시 학원청소업체 비용안내","과천시 교습소 스터디카페 청소업체"],
+        "stairs": ["과천 계단청소 업체추천","과천시 계단청소 정기관리 업체","과천 빌라 계단청소 전문업체","과천시 계단청소업체 비용안내","과천시 상가 건물 계단청소 업체"],
+    }
+    if service_key in custom:
+        return custom[service_key]
+    return [
+        f"과천 {service_label} 업체추천",
+        f"과천시 {service_label} 전문업체",
+        f"과천 {service_label} 비용안내",
+        f"과천시 {service_label} 정기관리",
+        f"과천시 {service_label} 업체추천",
+    ]
+
+def _generate_gwacheon_test():
+    # 기존 생성 함수/템플릿을 재사용할 수 있도록 최소 독립 페이지를 생성한다.
+    import html as _html
+    from pathlib import Path as _Path
+    root = _Path("out_gangnam") / "published" / "gyeonggi" / "gwacheon"
+    root.mkdir(parents=True, exist_ok=True)
+
+    # 기존 SERVICES 자료구조에서 key/label을 최대한 안전하게 추출
+    svc_pairs = []
+    try:
+        for s in SERVICES:
+            if isinstance(s, dict):
+                k = s.get("slug") or s.get("key") or s.get("id")
+                lab = s.get("name") or s.get("label") or k
+            elif isinstance(s, (list, tuple)) and len(s) >= 2:
+                k, lab = s[0], s[1]
+            else:
+                continue
+            if k and lab:
+                svc_pairs.append((str(k), str(lab)))
+    except Exception:
+        pass
+
+    # 현재 19종의 안정적인 fallback
+    if not svc_pairs:
+        svc_pairs = [
+            ("office","사무실청소"),("hospital","병원청소"),("academy","학원청소"),
+            ("store","매장청소"),("restaurant","식당청소"),("school","학교청소"),
+            ("gym","헬스장청소"),("factory","공장청소"),("salon","미용실청소"),
+            ("stairs","계단청소"),("cafe","카페청소"),("daycare","어린이집청소"),
+            ("bath","목욕탕청소"),("movein","입주청소"),("completion","준공청소"),
+            ("exterior","외벽청소"),("flood","침수청소"),("fire","화재청소"),
+            ("aircon","에어컨청소")
+        ]
+
+    # 정확히 19종까지만 테스트
+    svc_pairs = svc_pairs[:19]
+    links = []
+    for key, label in svc_pairs:
+        titles = _gwacheon_title5(key, label)
+        for i, title in enumerate(titles, 1):
+            d = root / key / f"v{i}"
+            d.mkdir(parents=True, exist_ok=True)
+            body = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<title>{_html.escape(title)}</title>
+<meta name="description" content="경기도 과천시 {_html.escape(label)} 안내 페이지입니다.">
+<meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f7fb;margin:0;color:#111">
+<main style="max-width:900px;margin:40px auto;padding:24px">
+<div style="background:#fff;border-radius:20px;padding:34px;border:1px solid #e5e7eb">
+<div style="color:#4f46ff;font-weight:700">경기도 과천시</div>
+<h1 style="font-size:34px;margin:12px 0">{_html.escape(title)}</h1>
+<p>과천시 지역에 맞춘 {_html.escape(label)} 안내 페이지입니다.</p>
+<p>업체 선택 기준, 작업 범위, 정기관리 여부와 비용 상담 내용을 지역과 업종에 맞춰 확인할 수 있습니다.</p>
+<a href="/" style="display:inline-block;margin-top:18px;padding:12px 18px;background:#4f46ff;color:white;text-decoration:none;border-radius:12px">청소비용비교 메인</a>
+</div></main></body></html>"""
+            (d / "index.html").write_text(body, encoding="utf-8")
+            links.append(f"/published/gyeonggi/gwacheon/{key}/v{i}/")
+
+    # 과천 테스트 인덱스
+    idx = root / "index.html"
+    items = "\n".join(f'<li><a href="{u}">{u}</a></li>' for u in links)
+    idx.write_text(f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<title>과천시 청소 대량배포 테스트</title></head><body>
+<h1>경기도 과천시 3호 테스트</h1><p>19개 업종 × 제목 5개 = {len(links)}개 테스트 URL</p><ul>{items}</ul>
+</body></html>""", encoding="utf-8")
+    print(f"[3호] 과천시 전국형 테스트 URL {len(links)}개 생성")
+
+_generate_gwacheon_test()
