@@ -1,0 +1,7 @@
+[build]
+  command = "python3 gen.py"
+  publish = "out_gangnam"
+
+[build.environment]
+  PYTHON_VERSION = "3.13"
+  CB_GU = "gangnam"
