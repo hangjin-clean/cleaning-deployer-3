@@ -614,6 +614,53 @@ def root():
     write(path, layout(title, desc, path, body, [(GN, None)], jsonld))
     return path, title, desc
 
+# ───────── 3호 대량배포 제목 변형 (지역×업종당 5개) ─────────
+def region_short(name):
+    return name[:-1] if name.endswith(('구','시')) else name
+
+def title_variants(region_name, v):
+    short, full, kw = region_short(region_name), region_name, v['kw']
+    patterns = {
+      '사무실청소': [f'{short} 사무실청소 업체추천', f'{full} 사무실청소 정기관리 업체', f'{short} 사무실정기청소 전문업체', f'{full} 사무실청소업체 비용안내', f'{full} 사무실 화장실 바닥청소 업체'],
+      '병원청소': [f'{short} 병원청소 업체추천', f'{full} 병원청소 업체추천', f'{short} 병원정기청소 전문업체', f'{full} 병원정기청소 전문업체', f'{full} 병원청소업체 비용안내'],
+      '학원청소': [f'{short} 학원청소 업체추천', f'{full} 학원 정기청소 업체', f'{short} 학원청소 전문업체', f'{full} 학원청소업체 비용안내', f'{full} 교습소 스터디카페 청소업체'],
+      '매장청소': [f'{short} 매장청소 업체추천', f'{full} 매장 정기관리 업체', f'{short} 매장청소 전문업체', f'{full} 매장청소업체 비용안내', f'{full} 매장 마감청소 업체추천'],
+      '식당청소': [f'{short} 식당청소 업체추천', f'{full} 식당 정기청소 업체', f'{short} 식당청소 전문업체', f'{full} 식당청소업체 비용안내', f'{full} 주방 후드 마감청소 업체'],
+      '학교청소': [f'{short} 학교청소 전문업체', f'{full} 학교 정기관리 업체', f'{short} 학교 대청소 업체추천', f'{full} 학교청소업체 비용안내', f'{full} 학교 화장실 바닥청소 업체'],
+      '헬스장청소': [f'{short} 헬스장청소 업체추천', f'{full} 헬스장 정기관리 업체', f'{short} 헬스장청소 전문업체', f'{full} 헬스장청소업체 비용안내', f'{full} 운동시설 화장실청소 업체'],
+      '공장청소': [f'{short} 공장청소 전문업체', f'{full} 공장 정기청소 업체', f'{short} 공장 바닥청소 업체추천', f'{full} 공장청소업체 비용안내', f'{full} 공장 대청소 전문업체'],
+      '미용실청소': [f'{short} 미용실청소 업체추천', f'{full} 미용실 정기관리 업체', f'{short} 미용실청소 전문업체', f'{full} 미용실청소업체 비용안내', f'{full} 미용실 마감청소 업체'],
+      '계단청소': [f'{short} 계단청소 업체추천', f'{full} 계단청소 정기관리 업체', f'{short} 빌라 계단청소 전문업체', f'{full} 계단청소업체 비용안내', f'{full} 상가 건물 계단청소 업체'],
+      '카페청소': [f'{short} 카페청소 업체추천', f'{full} 카페 정기관리 업체', f'{short} 카페 마감청소 전문업체', f'{full} 카페청소업체 비용안내', f'{full} 베이커리 매장청소 업체'],
+      '어린이집청소': [f'{short} 어린이집청소 업체추천', f'{full} 어린이집 정기청소 업체', f'{short} 어린이집청소 전문업체', f'{full} 어린이집청소업체 비용안내', f'{full} 보육시설 소독청소 업체'],
+      '목욕탕청소': [f'{short} 목욕탕청소 업체추천', f'{full} 목욕탕 정기청소 업체', f'{short} 목욕탕청소 전문업체', f'{full} 목욕탕청소업체 비용안내', f'{full} 사우나 욕실청소 업체'],
+      '입주청소': [f'{short} 입주청소 업체추천', f'{full} 입주청소 전문업체', f'{short} 입주청소업체 비용안내', f'{full} 아파트 입주청소 업체', f'{full} 빌라 오피스텔 입주청소 업체'],
+      '준공청소': [f'{short} 준공청소 전문업체', f'{full} 준공청소 업체추천', f'{short} 준공청소업체 비용안내', f'{full} 신축건물 준공청소 업체', f'{full} 상가 사무실 준공청소 업체'],
+      '외벽청소': [f'{short} 외벽청소 전문업체', f'{full} 외벽청소 업체추천', f'{short} 건물 외벽청소 비용안내', f'{full} 상가 외벽청소 업체', f'{full} 유리창 외벽청소 전문업체'],
+      '침수청소': [f'{short} 침수청소 전문업체', f'{full} 침수청소 업체추천', f'{short} 침수청소업체 비용안내', f'{full} 침수 긴급복구 청소업체', f'{full} 상가 주택 침수청소 업체'],
+      '화재청소': [f'{short} 화재청소 전문업체', f'{full} 화재청소 업체추천', f'{short} 화재청소업체 비용안내', f'{full} 화재 그을음제거 업체', f'{full} 화재복구 청소 전문업체'],
+      '에어컨청소': [f'{short} 에어컨청소 업체추천', f'{full} 에어컨청소 전문업체', f'{short} 에어컨청소업체 비용안내', f'{full} 시스템에어컨 청소업체', f'{full} 사업장 에어컨 정기청소 업체'],
+    }
+    return patterns[kw]
+
+def intent_copy(v, n):
+    base=v['kw']
+    return [f'{base} 업체를 고를 때 확인할 작업범위, 방문주기, 결제·증빙 조건을 비교합니다.', f'{base} 업체추천을 찾는 분이 업체별 관리방식과 상담 포인트를 빠르게 확인할 수 있게 정리했습니다.', f'{base} 정기관리는 공간 사용량과 영업시간에 따라 주기와 작업범위를 정하는 것이 중요합니다.', f'{base} 전문업체를 선택할 때 정기관리 가능 시간, 작업일지, 사후관리 조건을 함께 확인하세요.', f'{base} 비용은 면적만이 아니라 오염도, 화장실 수, 작업시간, 관리주기에 따라 달라져 방문견적이 정확합니다.'][n-1]
+
+def variant_path(v,n): return f'/published/seoul/{GU_SLUG}/{v["slug"]}/v{n}/'
+
+def variant_page(v,n):
+    path=variant_path(v,n); title=title_variants(GN,v)[n-1]; extra=intent_copy(v,n)
+    desc=f'{title}. {extra} 행진크린·지니크린·청소뱅크 3곳의 연락처와 무료견적 방법을 한 화면에서 비교합니다.'
+    ph=photo_list(v); items=[(path,pub(p),f'{GN} {v["kw"]} 작업 {i+1}',f'서울 {GN} · {title}') for i,p in enumerate(ph[:3])]
+    body=(f'<div class="hero"><div class="k">서울 {GN} · 제목변형 v{n}</div><h1>{e(title)}</h1><p>{e(extra)}</p><div class="cta"><a class="btn p" href="#compare">업체 3곳 비교</a></div></div>'
+          +company_rows(None,v)+feed(items,f'{GN} {v["kw"]} 작업 사례','현재 랜딩 디자인을 유지한 3호 대량배포 테스트 페이지입니다')
+          +f'<section class="sec"><h2>{e(title)} 확인 포인트</h2><div class="guide"><p>{e(v["intro"][0])}</p><p>{e(v["intro"][1])}</p><p class="pt"><strong>검색 의도별 안내.</strong> {e(extra)}</p></div></section>')
+    crumbs=[(GN,'/'),(v['kw'],vert_path(v)),(f'v{n}',None)]
+    jsonld=[{"@context":"https://schema.org","@type":"Service","name":title,"serviceType":v['kw'],"areaServed":{"@type":"Place","name":f"서울특별시 {GN}"},"description":desc}]
+    write(path,layout(title,desc,path,body,crumbs,jsonld,og_for(v)))
+    return path,title,desc
+
 # ───────── 빌드 ─────────
 def build():
     if OUT.exists(): shutil.rmtree(OUT)
@@ -626,6 +673,7 @@ def build():
                     dst = OUT / pub(p).lstrip('/'); dst.parent.mkdir(parents=True, exist_ok=True); shutil.copy(p, dst)
     pages = [root()] + [vert_hub(v) for v in VERTICALS] + [dong_hub(d) for d in DONGS]
     pages += [dong_vert_page(d, v, di) for di, d in enumerate(DONGS) for v in VERTICALS]
+    pages += [variant_page(v, n) for v in VERTICALS for n in range(1, 6)]
     titles = [t for _, t, _ in pages]; descs = [s for _, _, s in pages]
     assert len(set(titles)) == len(titles), '제목 중복'
     assert len(set(descs)) == len(descs), '설명 중복'
