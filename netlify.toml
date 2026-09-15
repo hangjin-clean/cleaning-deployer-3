@@ -5,4 +5,4 @@
 [build.environment]
   PYTHON_VERSION = "3.13"
   CB_GU = "gangnam"
-  BULK_LIMIT = "100"
+  BULK_LIMIT = "8000"
