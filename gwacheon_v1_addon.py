@@ -1,37 +1,65 @@
-from pathlib import Path
-import html
+# 3호 전국형 추가 페이지: 기존 3호 랜딩페이지 템플릿을 그대로 재사용
+# 기존 gen.py / 메인 / 강남 페이지는 수정하지 않음
+import gen as g
 
-OUT = Path("out_gangnam")
-TARGET = OUT / "published" / "gyeonggi" / "gwacheon" / "hospital" / "v1"
+AREA_FULL = "경기도 과천시"
+AREA = "과천시"
+AREA_SHORT = "과천"
+AREA_SLUG = "gwacheon"
+DONGS = ["중앙동","별양동","부림동","과천동","문원동","갈현동"]
+KEYS = [
+    "office","hospital","academy","store","restaurant","school","gym","factory","salon",
+    "stairs","cafe","daycare","bath","movein","completion","exterior","flood","fire","aircon"
+]
+
+def titles(key, label):
+    custom = {
+        "office": ["과천 사무실청소 업체추천","과천시 사무실 정기청소 업체","과천 사무실청소 전문업체","과천시 사무실청소업체 비용안내","과천시 사무실 정기관리 청소업체"],
+        "hospital": ["과천 병원청소 업체추천","과천시 병원청소 업체비용","과천 병원정기청소 전문업체","과천시 병원청소업체","과천 개인병원청소 업체추천"],
+        "academy": ["과천 학원청소 업체추천","과천시 학원 정기청소 업체","과천 학원청소 전문업체","과천시 학원청소업체 비용안내","과천시 교습소 스터디카페 청소업체"],
+        "stairs": ["과천 계단청소 업체추천","과천시 계단청소 정기관리 업체","과천 빌라 계단청소 전문업체","과천시 계단청소업체 비용안내","과천시 상가 건물 계단청소 업체"],
+    }
+    return custom.get(key, [
+        f"과천 {label} 업체추천",
+        f"과천시 {label} 전문업체",
+        f"과천 {label} 비용안내",
+        f"과천시 {label} 정기관리",
+        f"과천시 {label} 업체추천",
+    ])
+
+def page_path(key, n):
+    return f"/published/gyeonggi/{AREA_SLUG}/{key}/v{n}/"
+
+def make_page(v, key, n, title):
+    path = page_path(key, n)
+    items = []
+    for vv in g.VERTICALS[:6]:
+        ph = g.photo_list(vv)
+        if ph:
+            items.append((path, g.pub(ph[0]), f'{AREA_SHORT} {vv["kw"]}', f'{AREA_FULL} · {vv["kw"]}'))
+    chips = ''.join(f'<a href="{path}">{g.e(d)}</a>' for d in DONGS)
+
+    body = f'''<div class="hero"><div class="k">{AREA_FULL}</div>
+<h1>{g.e(title)}</h1>
+<p>{AREA}에서 필요한 {g.e(v["kw"])} 정보를 확인하고, 청소 종류와 업체 3곳의 연락처를 한 화면에서 비교할 수 있습니다. 견적은 각 업체에 직접 요청합니다.</p></div>
+<section class="sec"><h2>청소 종류별</h2><p class="sub">업종 19종</p>{g.icon_grid()}</section>
+<section class="sec"><h2>동별로 찾기</h2><p class="sub">{AREA} 주요 지역</p><div class="chips">{chips}</div></section>
+{g.feed(items, f'최근 {AREA_SHORT} 작업 사례', '3호 랜딩페이지와 동일한 구성입니다')}
+{g.company_rows(None, None)}'''
+
+    desc = f"{title}. {AREA_FULL} {v['kw']} 안내와 청소업체 3곳 비교, 전화상담 및 무료견적 안내."
+    crumbs = [(AREA, None)]
+    jsonld = [{"@context":"https://schema.org","@type":"WebPage","name":title,"description":desc,"url":g.HOST+path}]
+    g.write(path, g.layout(title, desc, path, body, crumbs, jsonld, g.og_for(v)))
+    return path
 
 def main():
-    TARGET.mkdir(parents=True, exist_ok=True)
-    title = "과천 병원청소 업체추천"
-    page = f"""<!doctype html>
-<html lang="ko"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(title)}</title>
-<meta name="description" content="경기도 과천시 병원·개인의원 정기청소 업체 비교와 상담 안내">
-<style>
-*{{box-sizing:border-box}} body{{margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f6f8fc;color:#111}}
-.wrap{{max-width:1080px;margin:auto;padding:28px 18px}} .hero,.card{{background:white;border:1px solid #e5e7eb;border-radius:22px;padding:28px;margin-bottom:18px}}
-.badge{{color:#4f46e5;font-weight:800}} h1{{font-size:38px;margin:10px 0 14px}} h2{{margin-top:0}}
-.grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}} .btn{{display:inline-block;padding:13px 18px;border-radius:12px;background:#4f46e5;color:white;text-decoration:none;font-weight:700}}
-.muted{{color:#5f6673;line-height:1.75}} @media(max-width:760px){{.grid{{grid-template-columns:1fr}} h1{{font-size:30px}}}}
-</style></head><body><main class="wrap">
-<section class="hero"><div class="badge">경기도 과천시</div><h1>{html.escape(title)}</h1>
-<p class="muted">과천시 병원·개인의원에서 필요한 오픈청소, 마감청소, 정기관리 업체를 비교해 보세요. 작업 범위와 방문 주기, 결제 방식 등을 확인한 뒤 상담할 수 있습니다.</p>
-<a class="btn" href="/">청소비용비교 메인 보기</a></section>
-<section class="card"><h2>과천 병원청소 확인 포인트</h2><p class="muted">진료실·대기실·복도·화장실·바닥 등 공간별 작업 범위, 주 1회부터 주 7회까지 필요한 관리 주기, 작업일지와 전후사진 제공 여부 등을 비교할 수 있습니다.</p></section>
-<section class="grid">
-<div class="card"><h2>행진크린</h2><p class="muted">법인·기업 대상 관리, 2인 1조 작업, 영업배상책임보험 1억 가입, 세금계산서·카드결제 상담.</p></div>
-<div class="card"><h2>지니크린</h2><p class="muted">개인 사업장 중심 직접 관리, 병원·학원·사무실 등 정기청소 상담.</p></div>
-<div class="card"><h2>청소뱅크</h2><p class="muted">사업장 정기관리와 병원청소 상담, 세금계산서·카드결제 가능 여부 확인.</p></div>
-</section>
-<section class="card"><h2>병원청소 상담 전 확인</h2><p class="muted">평수, 원하는 요일과 시간대, 주당 방문 횟수, 화장실 및 공용공간 포함 여부를 정리하면 보다 정확한 상담에 도움이 됩니다.</p></section>
-</main></body></html>"""
-    (TARGET / "index.html").write_text(page, encoding="utf-8")
-    print("[3호 add-on] 과천 병원청소 v1 완성형 페이지 생성")
+    made = []
+    for idx, v in enumerate(g.VERTICALS[:19]):
+        key = KEYS[idx]
+        for n, title in enumerate(titles(key, v["kw"]), 1):
+            made.append(make_page(v, key, n, title))
+    print(f"[3호] 과천 동일 랜딩 템플릿 {len(made)}개 생성")
 
 if __name__ == "__main__":
     main()
