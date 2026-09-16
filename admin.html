@@ -1,82 +1,116 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>청소배포 3호 관리자</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f5f7fb;font-family:Arial,'Noto Sans KR',sans-serif;color:#111}
-.wrap{max-width:1050px;margin:35px auto;padding:18px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:24px;margin-bottom:16px}
-h1{margin:0 0 8px}.sub{color:#68707d}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-label{display:block;font-weight:700;margin-bottom:7px}select,input{width:100%;padding:13px;border:1px solid #ccd2dc;border-radius:11px;font-size:15px}
-.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:10px 13px;border:1px solid #ccd2dc;border-radius:11px;background:#fff;cursor:pointer}
-.chip.on{border-color:#4f46ff;background:#f0efff}.btn{padding:14px 20px;border:0;border-radius:12px;background:#4f46ff;color:#fff;font-weight:800;font-size:16px;cursor:pointer}
-.btn:disabled{opacity:.5}.count{font-size:28px;font-weight:900;color:#4f46ff}.warn{padding:12px;border-radius:10px;background:#fff8df;color:#745c00}
-pre{white-space:pre-wrap;background:#111827;color:#f9fafb;border-radius:12px;padding:16px;min-height:120px}
-@media(max-width:720px){.grid{grid-template-columns:1fr}}
-</style></head><body><main class="wrap">
-<div class="card"><h1>청소배포 3호 관리자</h1><div class="sub">전국 지역 × 19개 업종 × 제목 5개 · 최대 8,000페이지</div></div>
-<div class="card grid">
-<div><label>지역 범위</label><select id="region"><option value="all">전국</option><option value="seoul">서울</option><option value="gyeonggi">경기</option><option value="metro">광역시</option></select></div>
-<div><label>업종</label><select id="service"><option value="all">19개 전체</option><option>병원청소</option><option>사무실청소</option><option>학원청소</option><option>계단청소</option></select></div>
-</div>
-<div class="card"><label>생성 개수</label><div class="chips" id="limits">
-<button class="chip on" data-n="100">100</button><button class="chip" data-n="1000">1,000</button>
-<button class="chip" data-n="5000">5,000</button><button class="chip" data-n="8000">8,000</button></div>
-<p>선택 생성 수: <span class="count" id="count">100</span>개</p>
-<div class="warn">현재 v1은 관리자 화면과 배포 요청값 생성까지 제공합니다. GitHub/Netlify 비밀키를 브라우저에 노출하지 않기 위해 실제 배포 실행은 서버 연결 단계에서 활성화합니다.</div></div>
-<div class="card"><button class="btn" id="preview">배포 설정 만들기</button></div>
-<div class="card"><label>배포 요청 미리보기</label><pre id="log">지역과 수량을 선택한 뒤 '배포 설정 만들기'를 누르세요.</pre></div>
-</main><script>
-let limit=100;
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>다해 2호 자동배포 관리자</title><link rel="stylesheet" href="/style.css"></head><body>
+<div class="admin-shell"><h1>청소배포 3호 자동배포 시스템 <small style="font-size:13px">FINAL BULK V1</small></h1>
+<div class="admin-card"><div class="row"><div><label>시·도</label><select id="region"></select></div><div><label>시·군·구</label><select id="area"></select></div></div><div class="row"><div><label>청소 업종</label><select id="service"></select></div><div><label>관리자 키</label><input id="adminKey" type="password" placeholder="ADMIN_KEY가 없으면 비워두세요"></div></div><label>생성할 읍·면·동</label><div class="actions"><button class="ghost" onclick="selectAll(true)">현재 지역 전체선택</button><button class="ghost" onclick="selectAll(false)">전체해제</button></div><p id="countHint" class="small"></p><div id="multiAreas" class="checks"></div></div>
 
-document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');
-  limit=Number(b.dataset.n);
-  count.textContent=limit.toLocaleString();
-});
+<div class="admin-card"><h2>⚡ 최대 8,000페이지 고속 대량생성</h2><p class="small">1호 최종형 방식: 전국 후보 계산 → 작은 배치 생성 → 진행률/실패/대기 확인 → Netlify Blobs 직접 공개 → 공개 페이지 검증 → IndexNow 등록. GitHub 대량 커밋은 사용하지 않습니다.</p>
+<div class="row"><div><label>대량 생성 범위</label><select id="bulkScope"><option value="nationwide">전국</option><option value="province">현재 시·도</option><option value="district">현재 시·군·구</option></select></div><div><label>생성 페이지 수</label><select id="bulkCount"><option>100</option><option>500</option><option>1000</option><option>3000</option><option>5000</option><option selected>8000</option></select></div></div>
+<div class="row"><div><label>내부 배치 크기</label><select id="bulkChunk"><option>5</option><option>10</option><option selected>20</option></select></div><div><label>동시 배치 수</label><select id="bulkParallel"><option>1</option><option>2</option><option selected>4</option></select></div></div>
+<div class="row"><div><label>업종 범위</label><select id="bulkServiceScope"><option value="current">현재 선택 업종만</option><option value="all" selected>전체 청소 업종</option></select></div><div><label>지역당 제목 수</label><select id="bulkTitlesPerArea"><option>1</option><option selected>3</option><option>5</option></select></div></div>
+<div class="admin-card" style="margin:12px 0;border-top:4px solid #059669"><h2>✅ 실제 생성 후보 계산</h2><div id="capacity" class="small">계산 중...</div><p class="small">전국 지역 × 선택 업종 × 지역당 제목 수를 실제 후보로 계산하고, 서버 커서 다음 위치부터 이어서 생성합니다.</p></div>
+<div class="admin-card" style="margin:12px 0;background:#fffaf0"><h3>🧪 안전 테스트 모드</h3><p class="small">실제 공개 없이 100개를 생성해 제목·지역·본문을 확인합니다.</p><div class="actions"><button class="secondary" onclick="applyTest()">테스트 기본값 적용</button><button class="primary" onclick="startBulk(true)">테스트 100 생성</button><button class="danger" onclick="resetWork()">화면 작업 초기화</button></div></div>
+<div class="actions"><button class="primary" onclick="startBulk(false)">원클릭 대량생성·자동배포 시작</button><button class="ghost" onclick="loadRecent()">최근 대량작업 불러오기</button><button class="secondary" onclick="publishCompleted()">완료 페이지 일괄 공개</button><button class="danger" onclick="stopBulk()">일시정지</button><button class="secondary" onclick="runIndexNow()">IndexNow 바로 등록</button><button class="secondary" onclick="verifyPublished()">실제 공개 페이지 10개 최종검증</button></div>
+<p id="bulkText">대기중</p><div class="progress-wrap"><div id="bulkProgress" class="progress"></div></div><div id="bulkSummary" class="summary"></div><div id="bulkJobs" class="small" style="margin-top:12px"></div></div>
 
-preview.onclick=async()=>{
-  const r=region.value;
-  const s=service.value;
+<div class="admin-card"><h2>생성 결과 · 최근 샘플</h2><div id="results" class="results"><div class="small">아직 생성된 결과가 없습니다.</div></div></div></div>
 
-  log.textContent=
-`3호 대량배포 요청 준비중...
-지역범위: ${r}
-업종: ${s}
-생성수: ${limit.toLocaleString()}개`;
-
-  preview.disabled=true;
-  preview.textContent='배포 요청중...';
-
-  try{
-    const res=await fetch('/.netlify/functions/deploy',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        region:r,
-        service:s,
-        limit:limit
-      })
-    });
-
-    const data=await res.json();
-
-    if(!res.ok || !data.ok){
-      throw new Error(data.error || '배포 요청 실패');
-    }
-
-    log.textContent=
-`배포 요청 접수 완료
-지역범위: ${r}
-업종: ${s}
-생성수: ${limit.toLocaleString()}개
-
-Netlify 배포가 시작되었습니다.`;
-
-  }catch(e){
-    log.textContent='배포 요청 실패\n'+e.message;
-  }finally{
-    preview.disabled=false;
-    preview.textContent='대량배포 실행';
-  }
-};
+<script>
+let SERVICES=[];
+let N={provinces:{}},bulk=null,timer=null,stopped=false;
+const $=id=>document.getElementById(id);
+function headers(){const h={'Content-Type':'application/json'};const k=$('adminKey').value.trim();if(k)h['X-Admin-Key']=k;return h}
+async function init(){
+ const sr=await fetch('/services.json?ts='+Date.now(),{cache:'no-store'});
+ if(!sr.ok)return alert('청소업종 데이터 로딩 실패 HTTP '+sr.status);
+ SERVICES=await sr.json();
+ if(!Array.isArray(SERVICES)||!SERVICES.length)return alert('청소업종 데이터가 비어 있습니다.');
+ $('service').innerHTML=SERVICES.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+ $('region').onchange=loadAreas;$('area').onchange=loadTargets;
+ $('adminKey').value=sessionStorage.getItem('cleaning3AdminKey')||'';$('adminKey').onchange=()=>sessionStorage.setItem('cleaning3AdminKey',$('adminKey').value);
+ const r=await fetch('/nationwide_regions.json?ts='+Date.now());if(!r.ok)return alert('전국 지역 데이터 로딩 실패 HTTP '+r.status);N=await r.json();
+ $('region').innerHTML=Object.keys(N.provinces||{}).map(x=>`<option>${x}</option>`).join('');loadAreas();calcCapacity();
+ const raw=localStorage.getItem('cleaning3BulkActiveV1');if(raw)try{bulk=JSON.parse(raw);renderBulk();}catch(e){}
+}
+function loadAreas(){const p=$('region').value;$('area').innerHTML=Object.keys(N.provinces?.[p]||{}).map(x=>`<option>${x}</option>`).join('');loadTargets();calcCapacity()}
+function norm(row){if(typeof row==='string')return {name:row,alias:false,sourceAreas:[row]};return {name:String(row?.name||'').trim(),alias:!!row?.alias,sourceAreas:row?.sourceAreas||[row?.name]}}
+function loadTargets(){const arr=(N.provinces?.[$('region').value]?.[$('area').value]||[]).map(norm).filter(x=>x.name);$('multiAreas').innerHTML=arr.map((x,i)=>`<label class="check${x.alias?' alias':''}"><input type="checkbox" value="${x.name}" ${i===0?'checked':''}> ${x.name}${x.alias?' <small>(통합 검색명)</small>':''}</label>`).join('');$('countHint').textContent=`${$('area').value} 지역 ${arr.length}개`;calcCapacity()}
+function selectAll(v){document.querySelectorAll('#multiAreas input').forEach(x=>x.checked=v)}
+function baseAreas(){
+ const scope=$('bulkScope').value,out=[],seen=new Set();const currentP=$('region').value,currentD=$('area').value;
+ const ps=scope==='nationwide'?Object.keys(N.provinces||{}):[currentP];
+ for(const p of ps){const ds=N.provinces?.[p]||{};const names=scope==='district'?[currentD]:Object.keys(ds);for(const d of names)for(const row of(ds[d]||[])){const x=norm(row);if(!x.name)continue;const k=p+'|'+d+'|'+x.name;if(seen.has(k))continue;seen.add(k);out.push({region:p,district:d,dong:x.name,alias:x.alias})}}
+ return out;
+}
+function selectedServices(){return $('bulkServiceScope').value==='current'?SERVICES.filter(x=>x.id===$('service').value):SERVICES}
+function candidateCapacity(){const a=baseAreas(),s=selectedServices(),t=Number($('bulkTitlesPerArea').value||5);return {areas:a.length,services:s.length,titles:t,total:a.length*s.length*t}}
+function calcCapacity(){const c=candidateCapacity();$('capacity').textContent=`기본 지역 ${c.areas.toLocaleString()}곳 × 업종 ${c.services}개 × 지역당 제목 ${c.titles}개 = 실제 후보 ${c.total.toLocaleString()}개`;}
+['bulkScope','bulkServiceScope','bulkTitlesPerArea','service'].forEach(id=>document.addEventListener('change',e=>{if(e.target.id===id)calcCapacity()}));
+function candidates(){const out=[];for(const a of baseAreas())for(const s of selectedServices())for(let v=0;v<Number($('bulkTitlesPerArea').value||5);v++)out.push({...a,serviceId:s.id,variant:v});return out}
+async function getCursor(){const r=await fetch('/.netlify/functions/bulk-cursor',{headers:headers()});const d=await r.json();return Number(d.cursor||0)}
+async function setCursor(n){await fetch('/.netlify/functions/bulk-cursor',{method:'POST',headers:headers(),body:JSON.stringify({cursor:n})})}
+function applyTest(){$('bulkScope').value='nationwide';$('bulkCount').value='100';$('bulkChunk').value='10';$('bulkParallel').value='2';$('bulkTitlesPerArea').value='3';calcCapacity()}
+async function startBulk(testOnly){
+ if(timer)clearInterval(timer);stopped=false;const all=candidates(),want=testOnly?100:Number($('bulkCount').value||8000);let cursor=testOnly?0:await getCursor();
+ if(cursor>=all.length)cursor=0;const chosen=all.slice(cursor,cursor+want);if(!chosen.length)return alert('생성 후보가 없습니다.');
+ if(!testOnly&&!confirm(`${chosen.length.toLocaleString()}개 페이지를 생성하고 완료 후 Netlify Blobs에 자동 공개할까요?\n다음 후보 위치: ${cursor.toLocaleString()}`))return;
+ const chunk=Number($('bulkChunk').value||20),par=Number($('bulkParallel').value||4),id='cleaning3-'+Date.now();
+ const grouped=new Map();
+ for(const x of chosen){
+   const k=x.region+'|'+x.serviceId;
+   if(!grouped.has(k))grouped.set(k,[]);
+   grouped.get(k).push(x);
+ }
+ const batches=[];let bi=0;
+ for(const items0 of grouped.values()){
+   for(let i=0;i<items0.length;i+=chunk){
+     const items=items0.slice(i,i+chunk);
+     batches.push({jobId:id+'-'+(bi++),region:items[0].region,serviceId:items[0].serviceId,targets:items.map(x=>({district:x.district,dong:x.dong,variant:x.variant})),status:'queued',completed:0,failed:0,total:items.length,missingPolls:0,error:''});
+   }
+ }
+ bulk={id,status:'running',testOnly,requested:want,cursorStart:cursor,cursorEnd:cursor+chosen.length,batches,parallel:par,createdAt:new Date().toISOString(),published:false,publishId:null};save();renderBulk();tick();
+ timer=setInterval(tick,1800);
+}
+async function tick(){
+ if(!bulk||stopped)return;const running=bulk.batches.filter(b=>b.status==='running').length;let slots=Math.max(0,bulk.parallel-running);
+ for(const b of bulk.batches){if(slots<=0)break;if(b.status!=='queued')continue;b.status='running';slots--;fetch('/.netlify/functions/generate-batch-background',{method:'POST',headers:headers(),body:JSON.stringify({jobId:b.jobId,region:b.region,targets:b.targets,serviceId:b.serviceId})}).catch(()=>{b.status='failed-start'})}
+ await Promise.all(bulk.batches.filter(b=>b.status==='running').map(async b=>{try{
+ const r=await fetch('/.netlify/functions/job-status?id='+encodeURIComponent(b.jobId),{headers:headers(),cache:'no-store'});
+ if(r.status===404){b.missingPolls=(b.missingPolls||0)+1;if(b.missingPolls>=8){b.status='failed-start';b.error='백그라운드 생성 작업이 시작되지 않았습니다.';}return;}
+ if(!r.ok){const d=await r.json().catch(()=>({}));b.status='failed-start';b.error=d.error||('상태조회 HTTP '+r.status);return;}
+ b.missingPolls=0;const d=await r.json();b.completed=d.completed||0;b.failed=d.failed||0;b.error=d.error||'';
+ if(['completed','failed'].includes(d.status))b.status=d.status;
+}catch(e){b.error=e.message||String(e)}}));
+ const done=bulk.batches.every(b=>['completed','failed','failed-start'].includes(b.status));save();renderBulk();
+ if(done){clearInterval(timer);timer=null;bulk.status='generated';if(!bulk.testOnly&&bulk.batches.every(b=>b.status==='completed'&&b.failed===0)){await setCursor(bulk.cursorEnd);await publishCompleted(true)}save();renderBulk();}
+}
+function counts(){const bs=bulk?.batches||[];return {total:bs.reduce((n,b)=>n+b.total,0),done:bs.reduce((n,b)=>n+b.completed,0),fail:bs.reduce((n,b)=>n+b.failed+(b.status==='failed-start'?b.total:0),0),run:bs.filter(b=>b.status==='running').length,wait:bs.filter(b=>b.status==='queued').length}}
+function renderBulk(){if(!bulk)return;const c=counts(),pct=c.total?Math.round((c.done+c.fail)/c.total*100):0;$('bulkProgress').style.width=pct+'%';$('bulkText').textContent=`${bulk.status==='generated'?'생성 완료':bulk.status==='published'?'공개 완료':bulk.status==='publishing'?'Netlify Blobs 직접 공개중':'고속 생성중'} · ${c.done}/${c.total} (${pct}%)`;$('bulkSummary').innerHTML=`<span class="pill">전체 ${c.total}</span><span class="pill">완료 ${c.done}</span><span class="pill bad">실패 ${c.fail}</span><span class="pill">실행중 배치 ${c.run}</span><span class="pill warn">대기 배치 ${c.wait}</span>`;const err=bulk.batches.find(b=>b.error);$('bulkJobs').textContent=`배치 ${bulk.batches.filter(b=>b.status==='completed').length}/${bulk.batches.length} 완료 · 3호 전용 Netlify Blobs 직접 공개 방식${err?' · 오류: '+err.error:''}`;showSamples();}
+async function showSamples(){
+ if(!bulk)return;
+ const done=bulk.batches.filter(b=>b.status==='completed').slice(0,12);
+ if(!done.length){$('results').innerHTML='<div class="small">생성중...</div>';return;}
+ const cards=[];
+ for(const b of done){
+   try{
+     const r=await fetch('/.netlify/functions/job-status?id='+encodeURIComponent(b.jobId),{headers:headers(),cache:'no-store'});
+     if(!r.ok)continue;
+     const d=await r.json();
+     const pages=(d.items||[]).filter(x=>x.status==='completed'&&x.page).map(x=>x.page);
+     for(const p of pages){
+       cards.push(`<div class="result"><b>${p.title||''}</b><div class="small">${p.region||''} ${p.district||''} ${p.area||''} · ${p.serviceName||''}</div><div class="small" style="margin-top:6px">${p.description||''}</div></div>`);
+       if(cards.length>=20)break;
+     }
+     if(cards.length>=20)break;
+   }catch(e){}
+ }
+ $('results').innerHTML=cards.length?cards.join(''):'<div class="small">실제 생성 제목을 불러오는 중...</div>';
+}
+function save(){if(bulk)localStorage.setItem('cleaning3BulkActiveV1',JSON.stringify(bulk))}
+function stopBulk(){stopped=true;if(timer)clearInterval(timer);timer=null;if(bulk)bulk.status='paused';save();renderBulk()}
+function resetWork(){if(timer)clearInterval(timer);timer=null;stopped=false;bulk=null;localStorage.removeItem('cleaning3BulkActiveV1');$('bulkProgress').style.width='0';$('bulkText').textContent='대기중';$('bulkSummary').innerHTML='';$('bulkJobs').innerHTML=''}
+async function loadRecent(){const raw=localStorage.getItem('cleaning3BulkActiveV1');if(!raw)return alert('최근 작업이 없습니다.');bulk=JSON.parse(raw);renderBulk();if(['running','paused'].includes(bulk.status)){stopped=false;bulk.status='running';timer=setInterval(tick,1800);tick()}}
+async function publishCompleted(auto=false){if(!bulk)return alert('생성 작업이 없습니다.');const ids=bulk.batches.filter(b=>b.status==='completed'&&b.failed===0).map(b=>b.jobId);if(!ids.length)return alert('공개할 완료 페이지가 없습니다.');if(!auto&&!confirm(`${ids.length}개 완료 배치를 Netlify Blobs에 직접 공개할까요?`))return;const id='pub-'+Date.now();bulk.publishId=id;bulk.status='publishing';save();renderBulk();const r=await fetch('/.netlify/functions/publish-mass-background',{method:'POST',headers:headers(),body:JSON.stringify({publishId:id,jobIds:ids})});if(!r.ok)return alert('공개 시작 실패');pollPublish(id)}
+function pollPublish(id){const t=setInterval(async()=>{const r=await fetch('/.netlify/functions/bulk-publish-status?id='+encodeURIComponent(id),{headers:headers(),cache:'no-store'});if(!r.ok)return;const d=await r.json();$('bulkText').textContent=d.status==='completed'?`Netlify Blobs 직접 공개 완료 · ${d.processed}/${d.total}`:`Netlify Blobs 직접 공개중 · ${d.processed}/${d.total}`;if(['completed','failed'].includes(d.status)){clearInterval(t);if(d.status==='completed'){bulk.status='published';bulk.published=true;save();renderBulk();alert(`${d.total}개 페이지 공개 완료`);}else alert('공개 실패: '+(d.error||''));}},1500)}
+async function runIndexNow(){const id='idx-'+Date.now();const r=await fetch('/.netlify/functions/indexnow-background',{method:'POST',headers:headers(),body:JSON.stringify({id})});if(!r.ok)return alert('IndexNow 시작 실패');const t=setInterval(async()=>{const rr=await fetch('/.netlify/functions/indexnow-status?id='+id,{headers:headers(),cache:'no-store'});if(!rr.ok)return;const d=await rr.json();$('bulkText').textContent=`IndexNow ${d.processed}/${d.total} · ${d.batch||0}/${d.batches||0}배치`;if(['completed','failed'].includes(d.status)){clearInterval(t);alert(d.status==='completed'?`IndexNow ${d.processed}개 등록 완료`:'IndexNow 오류: '+(d.error||''))}},1800)}
+async function verifyPublished(){const r=await fetch('/.netlify/functions/verify-published-pages',{headers:headers(),cache:'no-store'});const d=await r.json();if(!r.ok)return alert(d.error||'검증 실패');alert(`실제 공개페이지 10개 검증: ${d.pass?'정상':'오류'}\n전체 공개 URL: ${d.total.toLocaleString()}개`)}
+init();
 </script></body></html>

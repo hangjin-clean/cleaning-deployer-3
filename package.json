@@ -1,0 +1,11 @@
+{
+  "name": "dahae-deployer",
+  "version": "2.0.0",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^9.1.1"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
