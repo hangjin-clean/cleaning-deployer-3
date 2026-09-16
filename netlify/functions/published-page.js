@@ -47,18 +47,16 @@ async function getPage(pages,path){
   }
   return null;
 }
+const parts=decoded.split('/').filter(Boolean);
+if(parts[0]!=='published')return null;
+if(parts.length!==5 && parts.length!==6)return null;
 
-function rebuildFromPath(path){
-  try{
-    const decoded=decodeURIComponent(path);
-    const parts=decoded.split('/').filter(Boolean);
-    if(parts.length<6 || parts[0]!=='published')return null;
-
-    const provinceShort=parts[1];
-    const district=parts[2];
-    const dong=parts[3];
-    const serviceSlug=parts[4];
-    const versionPart=parts[5];
+const provinceShort=parts[1];
+const district=parts[2];
+const hasDong=parts.length===6;
+const dong=hasDong ? parts[3] : '';
+const serviceSlug=hasDong ? parts[4] : parts[3];
+const versionPart=hasDong ? parts[5] : parts[4];
 
     const service=services.find(x=>x.slug===serviceSlug);
     if(!service)return null;
