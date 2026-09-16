@@ -64,11 +64,13 @@ function buildPage(input){
  };
 }
 async function blobStore(name){
+  const siteID=String(process.env.BLOBS_SITE_ID||process.env.NETLIFY_SITE_ID||'').trim();
+  const token=String(process.env.BLOBS_TOKEN||process.env.NETLIFY_TOKEN||'').trim();
+  if(!siteID||!token){
+    throw new Error('Netlify Blobs 환경변수(BLOBS_SITE_ID, BLOBS_TOKEN)가 없습니다.');
+  }
   const {getStore}=await import('@netlify/blobs');
-  return getStore({
-    name,
-    consistency:'strong'
-  });
+  return getStore({name,consistency:'strong',siteID,token});
 }
 
 module.exports={json,auth,slug,esc,serviceById,buildPage,shortProvince,hash,blobStore};
