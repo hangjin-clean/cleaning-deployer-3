@@ -47,6 +47,9 @@ async function getPage(pages,path){
   }
   return null;
 }
+function rebuildFromPath(path){
+  try{
+    const decoded=decodeURIComponent(path);
 const parts=decoded.split('/').filter(Boolean);
 if(parts[0]!=='published')return null;
 if(parts.length!==5 && parts.length!==6)return null;
