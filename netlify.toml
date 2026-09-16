@@ -32,3 +32,8 @@ for = "/admin.html"
 for = "/.netlify/functions/*"
   [headers.values]
   Cache-Control = "no-store"
+[[redirects]]
+  from = "/published/*"
+  to = "/.netlify/functions/published-page?path=:splat"
+  status = 200
+  force = true
