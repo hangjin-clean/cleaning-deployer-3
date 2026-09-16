@@ -49,40 +49,152 @@ function buildPage(input){
     '무료견적 업체 비교'
   ];
 
-  // 사무실청소 전용 제목:
-  // 사용자가 지정한 짧고 자연스러운 검색형 패턴을 우선 적용한다.
-  // district가 "...시 ...구" 형태면 구 단위는 전체 district를 유지한다.
-  const isOffice = keyword==='사무실청소' || service.name==='사무실청소';
-  let title;
+  // 제목 생성 전용 영역
+  // 아래 영역만 업종별로 다양화하며, 배포/URL/Blobs/지역표시 로직은 건드리지 않는다.
+  const titleSets={
+    '사무실청소':[
+      `${displayDistrict} 사무실청소 전문업체 비교`,
+      `${displayDistrict} 사무실 정기청소 바닥청소`,
+      `${displayDistrict} 사무실청소 업체 대청소 정기관리`,
+      `${displayDistrict} 사무실청소 비용비교 바닥청소`,
+      `${displayDistrict} 사무실 정기청소 대청소 바닥왁스코팅 비용`
+    ],
+    '병원청소':[
+      `${displayDistrict} 병원청소 업체 추천`,
+      `${displayDistrict} 병원청소 개인의원 마감청소`,
+      `${displayDistrict} 병원 정기청소 업체 추천`,
+      `${displayDistrict} 개인의원 오픈 마감청소`,
+      `${displayDistrict} 병원청소 전문업체 비교`
+    ],
+    '학원청소':[
+      `${displayDistrict} 학원청소 정기관리 업체`,
+      `${displayDistrict} 학원청소 교습소 마감청소`,
+      `${displayDistrict} 학원 정기청소 업체 추천`,
+      `${displayDistrict} 공부방 학원청소 전문업체`,
+      `${displayDistrict} 학원청소 전문업체 비교`
+    ],
+    '매장청소':[
+      `${displayDistrict} 매장청소 마감청소 전문업체`,
+      `${displayDistrict} 매장청소 사업장 정기관리`,
+      `${displayDistrict} 매장청소 전문업체 비교`,
+      `${displayDistrict} 매장 마감청소 업체 추천`,
+      `${displayDistrict} 매장청소 정기관리 비용`
+    ],
+    '식당청소':[
+      `${displayDistrict} 식당청소 마감청소 업체`,
+      `${displayDistrict} 음식점 정기청소 주방청소`,
+      `${displayDistrict} 식당청소 전문업체 비교`,
+      `${displayDistrict} 식당 마감청소 정기관리`,
+      `${displayDistrict} 음식점청소 주방 후드청소 업체`
+    ],
+    '학교청소':[
+      `${displayDistrict} 학교청소 정기관리 업체`,
+      `${displayDistrict} 학교청소 교실 화장실청소`,
+      `${displayDistrict} 학교 대청소 전문업체`,
+      `${displayDistrict} 학교청소 바닥청소 정기관리`,
+      `${displayDistrict} 학교청소 전문업체 비교`
+    ],
+    '헬스장청소':[
+      `${displayDistrict} 헬스장청소 정기관리 업체`,
+      `${displayDistrict} 헬스장 마감청소 화장실청소`,
+      `${displayDistrict} 헬스장청소 바닥청소 업체`,
+      `${displayDistrict} 헬스장 정기청소 전문업체`,
+      `${displayDistrict} 헬스장청소 업체 비교`
+    ],
+    '공장청소':[
+      `${displayDistrict} 공장청소 전문업체 비교`,
+      `${displayDistrict} 공장 정기청소 바닥청소`,
+      `${displayDistrict} 공장청소 대청소 업체`,
+      `${displayDistrict} 공장 바닥청소 정기관리`,
+      `${displayDistrict} 공장청소 업체 비용 비교`
+    ],
+    '미용실청소':[
+      `${displayDistrict} 미용실청소 마감청소 업체`,
+      `${displayDistrict} 미용실 정기청소 바닥청소`,
+      `${displayDistrict} 미용실청소 전문업체 비교`,
+      `${displayDistrict} 미용실 마감청소 정기관리`,
+      `${displayDistrict} 미용실청소 업체 추천`
+    ],
+    '계단청소':[
+      `${displayDistrict} 계단청소 빌라 상가 업체`,
+      `${displayDistrict} 계단 정기청소 건물청소`,
+      `${displayDistrict} 계단청소 화장실 정기관리`,
+      `${displayDistrict} 빌라 계단청소 전문업체`,
+      `${displayDistrict} 계단청소 업체 비용 비교`
+    ],
+    '카페청소':[
+      `${displayDistrict} 카페청소 마감청소 업체`,
+      `${displayDistrict} 카페 정기청소 매장관리`,
+      `${displayDistrict} 카페청소 전문업체 비교`,
+      `${displayDistrict} 카페 마감청소 바닥청소`,
+      `${displayDistrict} 베이커리 카페청소 업체 추천`
+    ],
+    '어린이집청소':[
+      `${displayDistrict} 어린이집청소 정기관리 업체`,
+      `${displayDistrict} 어린이집 소독 청소업체`,
+      `${displayDistrict} 어린이집청소 화장실청소`,
+      `${displayDistrict} 어린이집 대청소 전문업체`,
+      `${displayDistrict} 어린이집청소 업체 비교`
+    ],
+    '목욕탕청소':[
+      `${displayDistrict} 목욕탕청소 정기관리 업체`,
+      `${displayDistrict} 목욕탕 사우나 마감청소`,
+      `${displayDistrict} 목욕탕청소 전문업체 비교`,
+      `${displayDistrict} 사우나청소 바닥청소 업체`,
+      `${displayDistrict} 목욕탕 대청소 업체 추천`
+    ],
+    '입주청소':[
+      `${displayDistrict} 입주청소 전문업체 비교`,
+      `${displayDistrict} 아파트 입주청소 업체`,
+      `${displayDistrict} 빌라 입주청소 비용 비교`,
+      `${displayDistrict} 신축 입주청소 전문업체`,
+      `${displayDistrict} 입주청소 업체 추천`
+    ],
+    '준공청소':[
+      `${displayDistrict} 준공청소 전문업체 비교`,
+      `${displayDistrict} 신축 준공청소 업체`,
+      `${displayDistrict} 준공청소 바닥청소 대청소`,
+      `${displayDistrict} 건물 준공청소 전문업체`,
+      `${displayDistrict} 준공청소 업체 비용 비교`
+    ],
+    '외벽청소':[
+      `${displayDistrict} 외벽청소 전문업체 비교`,
+      `${displayDistrict} 건물 외벽청소 업체`,
+      `${displayDistrict} 외벽 유리창청소 전문업체`,
+      `${displayDistrict} 상가 외벽청소 업체 추천`,
+      `${displayDistrict} 외벽청소 비용 견적 비교`
+    ],
+    '침수청소':[
+      `${displayDistrict} 침수청소 전문업체`,
+      `${displayDistrict} 침수 복구청소 업체`,
+      `${displayDistrict} 물난리 침수청소 대청소`,
+      `${displayDistrict} 침수청소 바닥청소 업체`,
+      `${displayDistrict} 침수청소 업체 비용 비교`
+    ],
+    '화재청소':[
+      `${displayDistrict} 화재청소 전문업체`,
+      `${displayDistrict} 화재 복구청소 업체`,
+      `${displayDistrict} 그을음청소 대청소 전문업체`,
+      `${displayDistrict} 화재청소 냄새제거 업체`,
+      `${displayDistrict} 화재청소 업체 비용 비교`
+    ],
+    '에어컨청소':[
+      `${displayDistrict} 에어컨청소 전문업체 비교`,
+      `${displayDistrict} 시스템에어컨 청소업체`,
+      `${displayDistrict} 에어컨 분해청소 업체`,
+      `${displayDistrict} 사업장 에어컨청소 전문업체`,
+      `${displayDistrict} 에어컨청소 비용 비교`
+    ]
+  };
 
-  if(isOffice){
-    const isCityOnly=/시$/.test(district) && !/\s/.test(district);
-    const cityFull=district;
-    const cityShort=isCityOnly ? district.replace(/시$/,'') : district;
-    const areaMain=isCityOnly ? cityFull : displayDistrict;
-    const areaShort=isCityOnly ? cityShort : displayDistrict;
-
-    const officePatterns=[
-      `${areaMain} 사무실청소 전문업체 비교`,
-      `${areaShort} 사무실청소 비용비교 바닥청소`,
-      `${areaShort} 사무실 정기청소 대청소 바닥왁스코팅 비용`,
-      `${areaMain} 사무실청소 업체 대청소 정기관리`,
-      `${areaShort} 사무실 정기청소 바닥청소`
-    ];
-    title=officePatterns[variant].replace(/\s+/g,' ').trim();
-  }else{
-    // 모든 업종 제목은 지역명을 맨 앞에 두고 자연스럽게 생성
-    const sub1=subs?.[0]||'정기청소';
-    const sub2=subs?.[1]||'대청소';
-    const titlePatterns=[
-      `${displayDistrict} ${keyword} 전문업체 비교`,
-      `${displayDistrict} ${keyword} ${sub1} 업체 추천`,
-      `${displayDistrict} ${keyword} 비용 견적 비교`,
-      `${displayDistrict} ${keyword} ${sub2} 정기관리`,
-      `${displayDistrict} ${keyword} 청소업체 비용 비교`
-    ];
-    title=titlePatterns[variant].replace(/\s+/g,' ').trim();
-  }
+  const selectedTitles=titleSets[keyword]||[
+    `${displayDistrict} ${keyword} 전문업체 비교`,
+    `${displayDistrict} ${keyword} 정기관리 업체 추천`,
+    `${displayDistrict} ${keyword} 비용 견적 비교`,
+    `${displayDistrict} ${keyword} 전문 청소업체`,
+    `${displayDistrict} ${keyword} 업체 비용 비교`
+  ];
+  const title=selectedTitles[variant].replace(/\s+/g,' ').trim();
 
   const intro=`${province} ${district} ${dong}에서 ${keyword} 서비스를 알아볼 때는 가격만 확인하기보다 작업 범위, 일정, 추가 비용 기준과 업체 조건을 함께 비교하는 것이 좋습니다. 현장 상태와 필요한 작업 범위에 따라 견적은 달라질 수 있습니다.`;
   const relatedText=subs.length?` 함께 비교해볼 관련 항목은 ${subs.join(', ')} 등이 있습니다.`:'';
