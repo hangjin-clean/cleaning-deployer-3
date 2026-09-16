@@ -38,7 +38,6 @@ async function getPage(pages,path){
   const candidates=new Set([path]);
   try{candidates.add(decodeURIComponent(path))}catch(e){}
   try{candidates.add(encodeURI(decodeURIComponent(path)))}catch(e){}
-
   for(const candidate of candidates){
     try{
       const p=await pages.get(`page/${encodeURIComponent(candidate)}`,{type:'json'});
@@ -47,19 +46,21 @@ async function getPage(pages,path){
   }
   return null;
 }
+
 function rebuildFromPath(path){
   try{
     const decoded=decodeURIComponent(path);
-const parts=decoded.split('/').filter(Boolean);
-if(parts[0]!=='published')return null;
-if(parts.length!==5 && parts.length!==6)return null;
+    const parts=decoded.split('/').filter(Boolean);
 
-const provinceShort=parts[1];
-const district=parts[2];
-const hasDong=parts.length===6;
-const dong=hasDong ? parts[3] : '';
-const serviceSlug=hasDong ? parts[4] : parts[3];
-const versionPart=hasDong ? parts[5] : parts[4];
+    if(parts[0]!=='published')return null;
+    if(parts.length!==5 && parts.length!==6)return null;
+
+    const provinceShort=parts[1];
+    const district=parts[2];
+    const hasDong=parts.length===6;
+    const dong=hasDong ? parts[3] : '';
+    const serviceSlug=hasDong ? parts[4] : parts[3];
+    const versionPart=hasDong ? parts[5] : parts[4];
 
     const service=services.find(x=>x.slug===serviceSlug);
     if(!service)return null;
@@ -84,6 +85,7 @@ const versionPart=hasDong ? parts[5] : parts[4];
   }catch(e){
     return null;
   }
+}
 }
 
 function html(p){
