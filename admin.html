@@ -26,7 +26,57 @@ pre{white-space:pre-wrap;background:#111827;color:#f9fafb;border-radius:12px;pad
 <div class="card"><label>배포 요청 미리보기</label><pre id="log">지역과 수량을 선택한 뒤 '배포 설정 만들기'를 누르세요.</pre></div>
 </main><script>
 let limit=100;
-document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');limit=+b.dataset.n;count.textContent=limit.toLocaleString()});
-preview.onclick=()=>{const r=region.value,s=service.value;log.textContent=
-`3호 대량배포 요청\n지역범위: ${r}\n업종: ${s}\n생성수: ${limit.toLocaleString()}개\n제목변형: 5개\n랜딩: 기존 3호 템플릿\n최대제한: 8,000개\n\n다음 서버 연결 단계에서 이 요청값으로 Netlify 배포를 실행합니다.`}
+
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  limit=Number(b.dataset.n);
+  count.textContent=limit.toLocaleString();
+});
+
+preview.onclick=async()=>{
+  const r=region.value;
+  const s=service.value;
+
+  log.textContent=
+`3호 대량배포 요청 준비중...
+지역범위: ${r}
+업종: ${s}
+생성수: ${limit.toLocaleString()}개`;
+
+  preview.disabled=true;
+  preview.textContent='배포 요청중...';
+
+  try{
+    const res=await fetch('/.netlify/functions/deploy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        region:r,
+        service:s,
+        limit:limit
+      })
+    });
+
+    const data=await res.json();
+
+    if(!res.ok || !data.ok){
+      throw new Error(data.error || '배포 요청 실패');
+    }
+
+    log.textContent=
+`배포 요청 접수 완료
+지역범위: ${r}
+업종: ${s}
+생성수: ${limit.toLocaleString()}개
+
+Netlify 배포가 시작되었습니다.`;
+
+  }catch(e){
+    log.textContent='배포 요청 실패\n'+e.message;
+  }finally{
+    preview.disabled=false;
+    preview.textContent='대량배포 실행';
+  }
+};
 </script></body></html>
