@@ -27,7 +27,9 @@ function buildPage(input){
  const keyword=String(service.coreKeyword||service.name||'').trim();
  const province=String(input.region||'').trim();
  const district=String(input.district||'').trim();
- const dong=String(input.dong||'').trim();
+ let dong=String(input.dong||'').trim();
+  // 시·군·구 값이 동 자리에 중복 전달되면 제목/지역표기에서 한 번만 사용
+  if(dong===district) dong='';
  const pshort=shortProvince(province);
 
  // 핵심키워드는 제목마다 정확히 1회 중심에 두고, 5개 패턴만 순환합니다.
