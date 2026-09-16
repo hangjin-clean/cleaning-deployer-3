@@ -34,7 +34,7 @@ function buildPage(input){
  // "업체 업체", "청소 청소" 같은 기계적 중복을 피합니다.
  const suffixes=[
    '전문업체 비교',
-   '홈클리닝 업체 추천',
+   '사업장청소 업체 추천',
    '비용 견적 비교',
    '우리동네 청소업체',
    '무료견적 업체 비교'
@@ -55,7 +55,7 @@ function buildPage(input){
  const site=String(process.env.SITE_URL||'https://cleaning-compare-3.netlify.app').replace(/\/$/,'');
  return {
    id:hash(path),region:province,district,area:dong,dong,
-   category:service.category||'홈클리닝',serviceId:service.id,serviceName:service.name,serviceSlug:service.slug,
+   category:service.category||'사업장청소',serviceId:service.id,serviceName:service.name,serviceSlug:service.slug,
    variant,keyword,title,
    description:`${district} ${dong} ${keyword} 비교. 우리동네에서 가까운 곳 우선, 3개 청소업체 비교.`,
    intro,work,subkeywords:subs,
@@ -64,13 +64,13 @@ function buildPage(input){
  };
 }
 async function blobStore(name){
-  const siteID=String(process.env.BLOBS_SITE_ID||process.env.NETLIFY_SITE_ID||'').trim();
-  const token=String(process.env.BLOBS_TOKEN||process.env.NETLIFY_TOKEN||'').trim();
-  if(!siteID||!token){
-    throw new Error('Netlify Blobs 환경변수(BLOBS_SITE_ID, BLOBS_TOKEN)가 없습니다.');
-  }
-  const {getStore}=await import('@netlify/blobs');
-  return getStore({name,consistency:'strong',siteID,token});
+ const siteID=String(process.env.BLOBS_SITE_ID||process.env.NETLIFY_SITE_ID||'').trim();
+ const token=String(process.env.BLOBS_TOKEN||process.env.NETLIFY_TOKEN||'').trim();
+ if(!siteID||!token){
+   throw new Error('Netlify Blobs 환경변수(BLOBS_SITE_ID, BLOBS_TOKEN)가 없습니다.');
+ }
+ const {getStore}=await import('@netlify/blobs');
+ return getStore({name,consistency:'strong',siteID,token});
 }
 
 module.exports={json,auth,slug,esc,serviceById,buildPage,shortProvince,hash,blobStore};
