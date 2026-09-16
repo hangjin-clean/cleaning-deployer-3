@@ -33,6 +33,14 @@ function buildPage(input){
   if(dong===district) dong='';
   const pshort=shortProvince(province);
 
+  // 중구·동구·서구·남구·북구처럼 전국에 반복되는 구 이름은 광역지역을 함께 표시
+  const ambiguousDistricts=new Set(['중구','동구','서구','남구','북구']);
+  const displayDistrict=ambiguousDistricts.has(district)
+    ? `${pshort} ${district}`.trim()
+    : district;
+
+  const subs=(service.subkeywords||[]).slice(0,7);
+
   const suffixes=[
     '전문업체 비교',
     '사업장청소 업체 추천',
@@ -51,8 +59,8 @@ function buildPage(input){
     const isCityOnly=/시$/.test(district) && !/\s/.test(district);
     const cityFull=district;
     const cityShort=isCityOnly ? district.replace(/시$/,'') : district;
-    const areaMain=isCityOnly ? cityFull : district;
-    const areaShort=isCityOnly ? cityShort : district;
+    const areaMain=isCityOnly ? cityFull : displayDistrict;
+    const areaShort=isCityOnly ? cityShort : displayDistrict;
 
     const officePatterns=[
       `${areaMain} 사무실청소 전문업체 비교`,
@@ -63,17 +71,19 @@ function buildPage(input){
     ];
     title=officePatterns[variant].replace(/\s+/g,' ').trim();
   }else{
+    // 모든 업종 제목은 지역명을 맨 앞에 두고 자연스럽게 생성
+    const sub1=subs?.[0]||'정기청소';
+    const sub2=subs?.[1]||'대청소';
     const titlePatterns=[
-      `${dong} ${keyword} ${district} ${suffixes[0]}`,
-      `${district} ${dong} ${keyword} ${suffixes[1]}`,
-      `${dong} ${keyword} ${pshort} ${district} ${suffixes[2]}`,
-      `${dong} ${keyword} ${suffixes[3]}`,
-      `${district} ${dong} ${keyword} ${suffixes[4]}`
+      `${displayDistrict} ${keyword} 전문업체 비교`,
+      `${displayDistrict} ${keyword} ${sub1} 업체 추천`,
+      `${displayDistrict} ${keyword} 비용 견적 비교`,
+      `${displayDistrict} ${keyword} ${sub2} 정기관리`,
+      `${displayDistrict} ${keyword} 청소업체 비용 비교`
     ];
     title=titlePatterns[variant].replace(/\s+/g,' ').trim();
   }
 
-  const subs=(service.subkeywords||[]).slice(0,7);
   const intro=`${province} ${district} ${dong}에서 ${keyword} 서비스를 알아볼 때는 가격만 확인하기보다 작업 범위, 일정, 추가 비용 기준과 업체 조건을 함께 비교하는 것이 좋습니다. 현장 상태와 필요한 작업 범위에 따라 견적은 달라질 수 있습니다.`;
   const relatedText=subs.length?` 함께 비교해볼 관련 항목은 ${subs.join(', ')} 등이 있습니다.`:'';
   const work=`${keyword} 상담 시에는 필요한 작업 범위를 먼저 정리해 두면 비교가 쉬워집니다.${relatedText} 업체별 포함·제외 작업, 예상 소요시간, 결제 조건 등을 확인한 뒤 원하는 조건에 맞는 곳을 선택하세요. 청소배포 3호는 무조건 가장 저렴한 업체를 고르기보다 현장 조건에 맞는 업체를 비교할 수 있도록 안내합니다.`;
@@ -83,7 +93,7 @@ function buildPage(input){
     id:hash(path),region:province,district,area:dong,dong,
     category:service.category||'사업장청소',serviceId:service.id,serviceName:service.name,serviceSlug:service.slug,
     variant,keyword,title,
-    description:`${district} ${dong} ${keyword} 비교. 우리동네에서 가까운 곳 우선, 3개 청소업체 비교.`,
+    description:`${displayDistrict} ${dong} ${keyword} 비교. 우리동네에서 가까운 곳 우선, 3개 청소업체 비교.`,
     intro,work,subkeywords:subs,
     urlPath:path,canonical:site+path,
     generatedAt:new Date().toISOString()
