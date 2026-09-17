@@ -12,7 +12,7 @@ const PROVINCE_BY_SHORT={
 const ICONS=['🏢','🏥','📚','🛍️','🍽️','🏫','🏋️','🏭','💇','🪜','☕','🧸','🛁','🚚','🏗️','🧗','🌊','🔥','❄️'];
 exports.handler=async function(event){
   try{
-const raw=(event.queryStringParameters||{}).path||event.path||'';
+    const raw=(event.queryStringParameters||{}).path||event.path||'';
     const clean=String(raw).replace(/^\/+/,'');
     const path='/published/'+clean.replace(/^published\//,'');
     const pages=await blobStore('cleaning3-published-pages');
@@ -109,14 +109,16 @@ function html(p){
     <p>${esc(p.work||'작업 범위, 일정, 정기관리 여부와 비용 조건을 확인한 뒤 원하는 업체를 선택할 수 있습니다.')}</p></div>
   </section>
   <section class="sec" id="compare">
-    <h2>청소업체 비교</h2><p class="sub">지역과 업종에 맞는 업체 조건을 확인하세요.</p>
+    <h2>${esc(place||district)} 청소 업체 3곳</h2>
+    <p class="sub">견적은 각 업체에서 직접 받습니다. 전화·폼 어느 쪽이든 됩니다.</p>
     <div class="panel">
-      <div class="company"><div><b>행진크린</b><span>법인·기업 사업장 전문 · 하청 없이 직접</span></div><a href="tel:01033007431">전화 상담</a></div>
-      <div class="company"><div><b>지니크린</b><span>개인 사업장 맞춤 청소 · 직접 관리</span></div><a href="tel:01059261764">전화 상담</a></div>
-      <div class="company"><div><b>청소뱅크</b><span>개인 사업장·병원 정기관리 · 무료 방문견적</span></div><a href="tel:01068560158">전화 상담</a></div>
+      <div class="company"><div><b>행진크린</b><span>법인 운영 · 기업 사업장 청소 · 정기관리 · 입주청소 · 대청소</span><div class="companylinks"><a href="tel:01033007431">📞 010-3300-7431</a><a href="https://xn--sy2b170ac4etyf.com/" target="_blank">홈페이지</a><a href="https://blog.naver.com/goldvine" target="_blank">블로그</a></div></div><a class="quote" href="https://docs.google.com/forms/d/e/1FAIpQLSd3uNlt1Mqu8xUtuxfSqNTV8Nx8yi-LNDIT2gwSx7RO6WTGJA/viewform" target="_blank">견적받기</a></div>
+      <div class="company"><div><b>지니크린</b><span>개인 사업장 맞춤 청소 · 정기관리 · 입주청소 · 대청소</span><div class="companylinks"><a href="tel:01059261764">📞 010-5926-1764</a><a href="https://jinicleaning.com/" target="_blank">홈페이지</a><a href="https://blog.naver.com/choija1023" target="_blank">블로그</a></div></div><a class="quote" href="https://docs.google.com/forms/d/e/1FAIpQLScb4iyLy6tOMDkxPv7rnsJbnh_zrqZNN7iQY-xdV5Ofpwhn5A/viewform" target="_blank">견적받기</a></div>
+      <div class="company"><div><b>청소뱅크</b><span>병원 · 개인 사업장 정기관리 · 무료 방문견적 상담</span><div class="companylinks"><a href="tel:01068560158">📞 010-6856-0158</a><a href="https://cleaning-bank.imweb.me/" target="_blank">홈페이지</a><a href="https://blog.naver.com/palhana" target="_blank">블로그</a></div></div><a class="quote" href="https://docs.google.com/forms/d/e/1FAIpQLSdHW-3aXFkPAz7eE46jdBGemgc6CHKebGbTGl3fKtj3iu6GfA/viewform" target="_blank">견적받기</a></div>
     </div>
   </section>
   <section class="sec"><h2>견적 확인 포인트</h2><div class="panel text"><p>작업 범위, 방문 주기, 추가 비용 기준, 결제 조건을 함께 비교하면 업체 선택이 쉬워집니다.</p></div></section>
+  <footer class="foot"><div class="brand">청소비용비교</div><p>${esc(place||district)} ${esc(serviceName)} 비교 안내 페이지. 견적·계약은 각 업체와 직접 진행하며 본 페이지는 상담을 중개하지 않습니다.</p><div class="footlinks"><a href="/">홈</a><a href="https://xn--sy2b170ac4etyf.com/" target="_blank">행진크린</a><a href="https://jinicleaning.com/" target="_blank">지니크린</a><a href="https://cleaning-bank.imweb.me/" target="_blank">청소뱅크</a><a href="/sitemap.xml">사이트맵</a></div><p>© 2026 청소비용비교</p></footer>
 </main>
 <div class="bottom"><a class="btn o" href="tel:01033007431">☎ 전화 상담</a><a class="btn p" href="#compare">무료 견적 받기</a></div>
 </body></html>`;
@@ -130,6 +132,7 @@ a{color:inherit;text-decoration:none}.wrap{max-width:780px;margin:0 auto;padding
 .crumb{font-size:12px;color:var(--mu);padding:14px 0 0}.hero{background:#fff;border:1px solid var(--bd);border-radius:20px;padding:28px 22px;margin:16px 0}.hero .k{font-size:13px;color:var(--p);font-weight:800}.hero h1{font-size:30px;line-height:1.3;margin:7px 0 12px;letter-spacing:-1.2px}.hero h1 em{font-style:normal;color:var(--p)}.hero p{margin:0;color:var(--mu);font-size:15px}
 .sec{margin:28px 0}.sec h2{font-size:20px;margin:0 0 4px}.sub{font-size:13px;color:var(--mu);margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.tile{background:#fff;border:1px solid var(--bd);border-radius:14px;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;text-align:center}.ico{font-size:24px;margin-bottom:7px}
 .panel{background:#fff;border:1px solid var(--bd);border-radius:18px;overflow:hidden}.text{padding:20px}.text h3{margin:0 0 10px;font-size:18px}.text p{color:var(--mu);margin:8px 0;font-size:14px}.company{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px;border-top:1px solid var(--bd)}.company:first-child{border-top:0}.company b{display:block;font-size:16px}.company span{display:block;font-size:12px;color:var(--mu);margin-top:3px}.company a{background:var(--pl);color:var(--p);padding:9px 12px;border-radius:10px;font-size:12px;font-weight:800;white-space:nowrap}
+.companylinks{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.companylinks a{background:#F5F6FA!important;color:#6B7280!important;padding:4px 9px!important;border-radius:8px!important;font-size:12px!important}.companylinks a:first-child{background:#EEF0FF!important;color:#4B4DFF!important;font-weight:700}.company .quote{background:#4B4DFF;color:#fff;padding:10px 14px;border-radius:11px;font-size:13px;font-weight:800;white-space:nowrap}.foot{background:#fff;border-top:1px solid var(--bd);margin:34px -16px 0;padding:28px 16px 34px;color:var(--mu);font-size:12px}.foot .brand{font-size:19px;margin-bottom:8px}.foot p{margin:7px 0}.footlinks{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0}.footlinks a{font-weight:700;color:var(--tx)}
 .bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);padding:10px 16px;display:flex;gap:8px;justify-content:center;z-index:30}.bottom .btn{width:min(370px,50%)}
 @media(max-width:640px){.grid{grid-template-columns:repeat(3,1fr)}.hero h1{font-size:27px}.company{align-items:flex-start}.company span{max-width:190px}}
 `;
