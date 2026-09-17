@@ -110,7 +110,6 @@ function html(p){
   </section>
   <section class="sec" id="compare">
     <h2>${esc(place||district)} 청소 업체 3곳</h2>
-<h2>${esc(place||district)} 청소 업체 3곳</h2>
     <p class="sub">견적은 각 업체에서 직접 받습니다. 전화·폼 어느 쪽이든 됩니다.</p>
     <div class="panel">
       <div class="company"><div><b>행진크린</b><span>법인 운영 · 기업 사업장 청소 · 정기관리 · 입주청소 · 대청소</span><div class="companylinks"><a href="tel:01033007431">📞 010-3300-7431</a><a href="https://xn--sy2b170ac4etyf.com/" target="_blank">홈페이지</a><a href="https://blog.naver.com/goldvine" target="_blank">블로그</a></div></div><a class="quote" href="https://docs.google.com/forms/d/e/1FAIpQLSd3uNlt1Mqu8xUtuxfSqNTV8Nx8yi-LNDIT2gwSx7RO6WTGJA/viewform" target="_blank">견적받기</a></div>
