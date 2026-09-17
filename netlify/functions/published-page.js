@@ -8,7 +8,9 @@ const C=[
 ['청소뱅크','cleaningbank.png','010-6856-0158','병원 · 개인 사업장 정기관리 · 무료 방문견적 상담','https://docs.google.com/forms/d/e/1FAIpQLSdHW-3aXFkPAz7eE46jdBGemgc6CHKebGbTGl3fKtj3iu6GfA/viewform','https://cleaning-bank.imweb.me/','https://blog.naver.com/palhana']];
 
 exports.handler=async event=>{try{
- const raw=(event.queryStringParameters||{}).path||'',path='/'+String(raw).replace(/^\/+/,'');
+const raw=(event.queryStringParameters||{}).path||'';
+const clean=String(raw).replace(/^\/+/,'');
+const path='/published/'+clean.replace(/^published\//,'');
  const store=await blobStore('cleaning3-published-pages');let p=await getPage(store,path);if(!p)p=rebuild(path);
  if(!p)return simple(404,'페이지를 찾을 수 없습니다.');
  return {statusCode:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=300'},body:html(p)};
