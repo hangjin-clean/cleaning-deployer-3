@@ -37,6 +37,6 @@ for = "/.netlify/functions/*"
 
 [[redirects]]
 from = "/published/*"
-to = "/.netlify/functions/published-page/:splat"
+to = "/.netlify/functions/published-page"
 status = 200
 force = true
