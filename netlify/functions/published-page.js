@@ -12,7 +12,7 @@ const PROVINCE_BY_SHORT={
 const ICONS=['🏢','🏥','📚','🛍️','🍽️','🏫','🏋️','🏭','💇','🪜','☕','🧸','🛁','🚚','🏗️','🧗','🌊','🔥','❄️'];
 exports.handler=async function(event){
   try{
-    const raw=(event.queryStringParameters||{}).path||'';
+const raw=(event.queryStringParameters||{}).path||event.path||'';
     const clean=String(raw).replace(/^\/+/,'');
     const path='/published/'+clean.replace(/^published\//,'');
     const pages=await blobStore('cleaning3-published-pages');
