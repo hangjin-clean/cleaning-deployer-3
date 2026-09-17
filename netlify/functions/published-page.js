@@ -1,162 +1,36 @@
 const {esc,blobStore,buildPage}=require('./_shared');
 const services=require('../../data/services.json');
+const P={'서울':'서울특별시','부산':'부산광역시','대구':'대구광역시','인천':'인천광역시','광주':'광주광역시','대전':'대전광역시','울산':'울산광역시','세종':'세종특별자치시','경기':'경기도','강원':'강원특별자치도','충북':'충청북도','충남':'충청남도','전북':'전북특별자치도','전남':'전라남도','경북':'경상북도','경남':'경상남도','제주':'제주특별자치도'};
+const I={'office':'🏢','hospital':'🏥','academy':'📚','retail':'🛍️','restaurant':'🍽️','school':'🏫','gym':'🏋️','factory':'🏭','salon':'💇','stair':'🪜','cafe':'☕','daycare':'🧸','bath':'🛁','movein':'🚚','newbuild':'🏗️','exterior':'🧗','flood':'🌊','fire':'🔥','aircon':'❄️'};
+const C=[
+['행진크린','hangjin.png','010-3300-7431','법인 운영 · 기업 사업장 청소 · 정기관리 · 입주청소 · 대청소','https://docs.google.com/forms/d/e/1FAIpQLSd3uNlt1Mqu8xUtuxfSqNTV8Nx8yi-LNDIT2gwSx7RO6WTGJA/viewform','https://xn--sy2b170ac4etyf.com/','https://blog.naver.com/goldvine'],
+['지니크린','jini.png','010-5926-1764','개인 사업장 맞춤 청소 · 정기관리 · 입주청소 · 대청소','https://docs.google.com/forms/d/e/1FAIpQLScb4iyLy6tOMDkxPv7rnsJbnh_zrqZNN7iQY-xdV5Ofpwhn5A/viewform','https://jinicleaning.com/','https://blog.naver.com/choija1023'],
+['청소뱅크','cleaningbank.png','010-6856-0158','병원 · 개인 사업장 정기관리 · 무료 방문견적 상담','https://docs.google.com/forms/d/e/1FAIpQLSdHW-3aXFkPAz7eE46jdBGemgc6CHKebGbTGl3fKtj3iu6GfA/viewform','https://cleaning-bank.imweb.me/','https://blog.naver.com/palhana']];
 
-const PROVINCE_BY_SHORT={
-  '서울':'서울특별시','부산':'부산광역시','대구':'대구광역시','인천':'인천광역시',
-  '광주':'광주광역시','대전':'대전광역시','울산':'울산광역시','세종':'세종특별자치시',
-  '경기':'경기도','강원':'강원특별자치도','충북':'충청북도','충남':'충청남도',
-  '전북':'전북특별자치도','전남':'전라남도','경북':'경상북도','경남':'경상남도',
-  '제주':'제주특별자치도'
-};
+exports.handler=async event=>{try{
+ const raw=(event.queryStringParameters||{}).path||'',path='/'+String(raw).replace(/^\/+/,'');
+ const store=await blobStore('cleaning3-published-pages');let p=await getPage(store,path);if(!p)p=rebuild(path);
+ if(!p)return simple(404,'페이지를 찾을 수 없습니다.');
+ return {statusCode:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=300'},body:html(p)};
+}catch(e){return simple(500,'페이지 로딩 오류: '+(e.message||String(e)))}};
 
-const ICONS=['🏢','🏥','📚','🛍️','🍽️','🏫','🏋️','🏭','💇','🪜','☕','🧸','🛁','🚚','🏗️','🧗','🌊','🔥','❄️'];
-
-exports.handler=async function(event){
-  try{
-    const raw=(event.queryStringParameters||{}).path||'';
-    const path='/' + String(raw).replace(/^\/+/,'');
-    const pages=await blobStore('cleaning3-published-pages');
-
-    let p=await getPage(pages,path);
-    if(!p)p=rebuildFromPath(path);
-    if(!p)return simple(404,'페이지를 찾을 수 없습니다.');
-
-    return {
-      statusCode:200,
-      headers:{
-        'Content-Type':'text/html; charset=utf-8',
-        'Cache-Control':'public, max-age=300'
-      },
-      body:html(p)
-    };
-  }catch(e){
-    return simple(500,'페이지 로딩 오류: '+(e.message||String(e)));
-  }
-};
-
-async function getPage(pages,path){
-  const candidates=new Set([path]);
-  try{candidates.add(decodeURIComponent(path))}catch(e){}
-  try{candidates.add(encodeURI(decodeURIComponent(path)))}catch(e){}
-  for(const candidate of candidates){
-    try{
-      const p=await pages.get(`page/${encodeURIComponent(candidate)}`,{type:'json'});
-      if(p)return p;
-    }catch(e){}
-  }
-  return null;
-}
-
-function rebuildFromPath(path){
-  try{
-    const decoded=decodeURIComponent(path);
-    const parts=decoded.split('/').filter(Boolean);
-    if(parts[0]!=='published')return null;
-    if(parts.length!==5 && parts.length!==6)return null;
-
-    const provinceShort=parts[1];
-    const district=parts[2];
-    const hasDong=parts.length===6;
-    const dong=hasDong?parts[3]:'';
-    const serviceSlug=hasDong?parts[4]:parts[3];
-    const versionPart=hasDong?parts[5]:parts[4];
-
-    const service=services.find(x=>x.slug===serviceSlug);
-    if(!service)return null;
-
-    const m=/^v([1-5])-/.exec(versionPart);
-    if(!m)return null;
-    const variant=Number(m[1])-1;
-
-    const region=PROVINCE_BY_SHORT[provinceShort]||provinceShort;
-    const p=buildPage({region,district,dong,serviceId:service.id,variant});
-
-    const site=String(process.env.SITE_URL||'https://cleaning-compare-3.netlify.app').replace(/\/$/,'');
-    p.urlPath=decoded;
-    p.canonical=site+decoded;
-    return p;
-  }catch(e){
-    return null;
-  }
-}
+async function getPage(store,path){const a=new Set([path]);try{a.add(decodeURIComponent(path))}catch(e){};try{a.add(encodeURI(decodeURIComponent(path)))}catch(e){};for(const x of a){try{const p=await store.get(`page/${encodeURIComponent(x)}`,{type:'json'});if(p)return p}catch(e){}}return null}
+function rebuild(path){try{const d=decodeURIComponent(path),a=d.split('/').filter(Boolean);if(a[0]!=='published'||![5,6].includes(a.length))return null;const hd=a.length===6,ps=a[1],district=a[2],dong=hd?a[3]:'',slug=hd?a[4]:a[3],vp=hd?a[5]:a[4],s=services.find(x=>x.slug===slug),m=/^v([1-5])-/.exec(vp);if(!s||!m)return null;const p=buildPage({region:P[ps]||ps,district,dong,serviceId:s.id,variant:Number(m[1])-1}),site=String(process.env.SITE_URL||'https://cleaning-compare-3.netlify.app').replace(/\/$/,'');p.urlPath=d;p.canonical=site+d;return p}catch(e){return null}}
 
 function html(p){
-  const area=String(p.area||p.dong||p.district||'').trim();
-  const district=String(p.district||'').trim();
-  const region=String(p.region||'').trim();
-  const serviceName=String(p.serviceName||p.keyword||'청소').trim();
-  const place=area||district;
-  const regionLabel=[region,district,area].filter((x,i,a)=>x&&a.indexOf(x)===i).join(' ');
-  const serviceTiles=services.slice(0,19).map((s,i)=>{
-    const name=esc(s.name||s.coreKeyword||'청소');
-    return `<div class="tile"><div class="ico">${ICONS[i]||'🧹'}</div><div>${name}</div></div>`;
-  }).join('');
-
-  return `<!doctype html><html lang="ko"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(p.title||`${place} ${serviceName} 업체 비교`)}</title>
-<meta name="description" content="${esc(p.description||`${place} ${serviceName} 업체 비교 안내`)}">
-<meta name="robots" content="index,follow"><link rel="canonical" href="${esc(p.canonical||'')}">
-<style>${CSS}</style></head><body>
-<header class="top"><div class="wrap topin"><a class="brand" href="/">청소비용비교</a><a class="btn p" href="#compare">견적받기</a></div></header>
-
-<main class="wrap">
-  <div class="crumb">${esc(place||district)}</div>
-
-  <section class="hero">
-    <div class="k">${esc(regionLabel)}</div>
-    <h1>${esc(place||district)}에서<br><em>${esc(serviceName)}</em>가 필요하세요?</h1>
-    <p>${esc(place||district)} ${esc(serviceName)} 작업 방식과 업체 조건을 한 화면에서 비교하세요. 견적은 각 업체에 직접 요청할 수 있습니다.</p>
-  </section>
-
-  <section class="sec">
-    <h2>청소 종류별</h2>
-    <p class="sub">업종 19종</p>
-    <div class="grid">${serviceTiles}</div>
-  </section>
-
-  <section class="sec">
-    <h2>${esc(place||district)} ${esc(serviceName)} 안내</h2>
-    <div class="panel text">
-      <h3>${esc(p.title||`${place} ${serviceName}`)}</h3>
-      <p>${esc(p.intro||`${place} 지역 ${serviceName} 작업 범위와 관리 조건을 비교해보세요.`)}</p>
-      <p>${esc(p.work||'작업 범위, 일정, 정기관리 여부와 비용 조건을 확인한 뒤 원하는 업체를 선택할 수 있습니다.')}</p>
-    </div>
-  </section>
-
-  <section class="sec" id="compare">
-    <h2>청소업체 비교</h2>
-    <p class="sub">지역과 업종에 맞는 업체 조건을 확인하세요.</p>
-    <div class="panel">
-      <div class="company"><div><b>행진크린</b><span>법인·기업 사업장 전문 · 하청 없이 직접</span></div><a href="tel:01033007431">전화 상담</a></div>
-      <div class="company"><div><b>지니크린</b><span>개인 사업장 맞춤 청소 · 직접 관리</span></div><a href="tel:01059261764">전화 상담</a></div>
-      <div class="company"><div><b>청소뱅크</b><span>개인 사업장·병원 정기관리 · 무료 방문견적</span></div><a href="tel:01068560158">전화 상담</a></div>
-    </div>
-  </section>
-
-  <section class="sec">
-    <h2>견적 확인 포인트</h2>
-    <div class="panel text"><p>작업 범위, 방문 주기, 추가 비용 기준, 결제 조건을 함께 비교하면 업체 선택이 쉬워집니다.</p></div>
-  </section>
-</main>
-
-<div class="bottom"><a class="btn o" href="tel:01033007431">☎ 전화 상담</a><a class="btn p" href="#compare">무료 견적 받기</a></div>
-</body></html>`;
-}
-
-const CSS=`
-:root{--p:#4B4DFF;--p2:#6C6EFF;--pl:#EEF0FF;--bg:#F5F6FA;--card:#fff;--tx:#1B1D2A;--mu:#6B7280;--bd:#E9EBF2}
-*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--tx);font-family:Pretendard,Inter,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.6;padding-bottom:92px}
-a{color:inherit;text-decoration:none}.wrap{max-width:780px;margin:0 auto;padding:0 16px}
-.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--bd)}.topin{height:64px;display:flex;align-items:center;justify-content:space-between}
-.brand{font-weight:900;font-size:23px;color:var(--p);font-style:italic;letter-spacing:-1px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 17px;border-radius:12px;font-weight:800;font-size:14px;border:1px solid transparent}.btn.p{background:var(--p);color:#fff}.btn.o{background:#fff;border-color:var(--bd)}
-.crumb{font-size:12px;color:var(--mu);padding:14px 0 0}.hero{background:#fff;border:1px solid var(--bd);border-radius:20px;padding:28px 22px;margin:16px 0}.hero .k{font-size:13px;color:var(--p);font-weight:800}.hero h1{font-size:30px;line-height:1.3;margin:7px 0 12px;letter-spacing:-1.2px}.hero h1 em{font-style:normal;color:var(--p)}.hero p{margin:0;color:var(--mu);font-size:15px}
-.sec{margin:28px 0}.sec h2{font-size:20px;margin:0 0 4px}.sub{font-size:13px;color:var(--mu);margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.tile{background:#fff;border:1px solid var(--bd);border-radius:14px;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;text-align:center}.ico{font-size:24px;margin-bottom:7px}
-.panel{background:#fff;border:1px solid var(--bd);border-radius:18px;overflow:hidden}.text{padding:20px}.text h3{margin:0 0 10px;font-size:18px}.text p{color:var(--mu);margin:8px 0;font-size:14px}.company{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px;border-top:1px solid var(--bd)}.company:first-child{border-top:0}.company b{display:block;font-size:16px}.company span{display:block;font-size:12px;color:var(--mu);margin-top:3px}.company a{background:var(--pl);color:var(--p);padding:9px 12px;border-radius:10px;font-size:12px;font-weight:800;white-space:nowrap}
-.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--bd);padding:10px 16px;display:flex;gap:8px;justify-content:center;z-index:30}.bottom .btn{width:min(370px,50%)}
-@media(max-width:640px){.grid{grid-template-columns:repeat(3,1fr)}.hero h1{font-size:27px}.company{align-items:flex-start}.company span{max-width:190px}}
-`;
-
-function simple(statusCode,msg){
-  return {statusCode,headers:{'Content-Type':'text/html; charset=utf-8'},body:`<!doctype html><meta charset="utf-8"><h1>${esc(msg)}</h1>`}
-}
+ const district=String(p.district||''),dong=String(p.dong||p.area||''),place=dong||district,region=String(p.region||''),svc=String(p.serviceName||p.keyword||'청소');
+ const grid=services.slice(0,19).map(s=>`<div class="svc"><i>${I[s.id]||'🧹'}</i>${esc(s.name||s.coreKeyword||'청소')}</div>`).join('');
+ const chips=[place,district,...(p.subkeywords||[]).slice(0,7)].filter((x,i,a)=>x&&a.indexOf(x)===i).map(x=>`<span>${esc(x)}</span>`).join('');
+ const rows=C.map(c=>`<div class="row"><div class="lg"><img src="/assets/logos/${c[1]}" alt="${c[0]}"></div><div class="tx"><b>${c[0]}</b><span>${c[3]}</span><div class="links"><a class="tel" href="tel:${c[2].replace(/-/g,'')}">📞 ${c[2]}</a><a href="${c[5]}" target="_blank">홈페이지</a><a href="${c[6]}" target="_blank">블로그</a></div></div><a class="btn p sm" href="${c[4]}" target="_blank">견적받기</a></div>`).join('');
+ const intro=esc(p.intro||`${place} ${svc} 작업 방식과 업체 조건을 비교해보세요.`),work=esc(p.work||`${svc} 작업 범위와 관리주기, 비용 조건을 확인하세요.`);
+ return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.title||`${place} ${svc} 업체 비교`)}</title><meta name="description" content="${esc(p.description||'')}"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(p.canonical||'')}"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"><style>${CSS}</style></head><body>
+<header class="top"><div class="wrap topin"><a class="brand" href="/">청소비용비교</a><a class="btn p topbtn" href="#compare">견적받기</a></div></header><main class="wrap"><nav class="crumb">${esc(place)}</nav>
+<section class="hero"><div class="k">${esc(region)} ${esc(district)}${dong?' '+esc(dong):''}</div><h1>${esc(place)}에서<br><em>${esc(svc)}</em>가 필요하세요?</h1><p>${intro}</p></section>
+<section class="sec"><h2>청소 종류별</h2><p class="sub">업종 19종</p><div class="icons">${grid}</div></section>
+<section class="sec"><h2>지역별 찾기</h2><p class="sub">${esc(place)} ${esc(svc)}</p><div class="chips">${chips}</div></section>
+<section class="sec"><h2>${esc(place)} ${esc(svc)} 안내</h2><div class="guide"><h3>${esc(p.title||'')}</h3><p>${intro}</p><p>${work}</p></div></section>
+<section class="sec" id="compare"><h2>${esc(place)} 청소 업체 3곳</h2><p class="sub">견적은 각 업체에서 직접 받습니다. 전화·폼 어느 쪽이든 됩니다.</p><div class="panel">${rows}</div></section>
+<footer><span class="brand">청소비용비교</span><p>${esc(place)} ${esc(svc)} 비교 안내 페이지. 견적·계약은 각 업체와 직접 진행합니다.</p><div class="fl"><a href="/">홈</a><a href="/sitemap.xml">사이트맵</a></div>© 2026 청소비용비교</footer></main>
+<div class="bar"><div class="in"><a class="btn o" href="tel:01033007431">📞 전화 상담</a><a class="btn p" href="#compare">무료 견적 받기</a></div></div></body></html>`}
+const CSS=`:root{--p:#4B4DFF;--pl:#EEF0FF;--bg:#F5F6FA;--tx:#1B1D2A;--mu:#6B7280;--bd:#E9EBF2}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:Pretendard,Inter,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.6;padding-bottom:76px}a{color:inherit;text-decoration:none}.wrap{max-width:780px;margin:auto;padding:0 16px}.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--bd)}.topin{height:56px;display:flex;align-items:center;justify-content:space-between}.brand{font-weight:900;font-size:22px;color:var(--p);font-style:italic}.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:12px;font-weight:700;border:1px solid transparent}.btn.p{background:var(--p);color:#fff}.btn.o{background:#fff;border-color:var(--bd)}.topbtn{padding:8px 14px;font-size:13px}.crumb{font-size:12px;color:var(--mu);padding-top:12px}.hero{background:#fff;border:1px solid var(--bd);border-radius:20px;padding:26px 22px;margin:16px 0}.hero .k{font-size:13px;color:var(--p);font-weight:700}.hero h1{font-size:30px;line-height:1.3;margin:6px 0 10px}.hero h1 em{font-style:normal;color:var(--p)}.hero p{margin:0;color:var(--mu);font-size:15px}.sec{margin:26px 0}.sec h2{font-size:19px;margin:0 0 4px}.sub{font-size:13px;color:var(--mu);margin:0 0 14px}.icons{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.svc{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:12px 4px;text-align:center;font-size:12px}.svc i{display:block;font-size:24px;font-style:normal;margin-bottom:4px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chips span{background:#fff;border:1px solid var(--bd);border-radius:999px;padding:8px 14px;font-size:13px}.guide{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:20px}.guide h3{margin:0 0 12px}.guide p{font-size:14px;color:var(--mu)}.panel{background:#fff;border:1px solid var(--bd);border-radius:18px;overflow:hidden}.row{display:flex;align-items:center;gap:14px;padding:16px 18px;border-top:1px solid var(--bd)}.row:first-child{border-top:0}.lg{width:52px;height:52px;border-radius:14px;background:var(--pl);display:flex;align-items:center;justify-content:center;flex:none}.lg img{max-width:44px;max-height:30px}.tx{flex:1;min-width:0}.tx b{display:block}.tx>span{display:block;font-size:13px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.links{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}.links a{font-size:12px;color:var(--mu);background:#F5F6FA;border-radius:8px;padding:4px 9px}.links .tel{color:var(--p);font-weight:700;background:var(--pl)}.sm{padding:9px 14px;font-size:13px}footer{background:#fff;border-top:1px solid var(--bd);margin:30px -16px 0;padding:26px 16px;font-size:12px;color:var(--mu)}footer .brand{font-size:18px;display:block}.fl{display:flex;gap:14px;margin:8px 0}.bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--bd);padding:10px 16px}.bar .in{max-width:780px;margin:auto;display:flex;gap:8px}.bar .btn{flex:1}@media(max-width:480px){.icons{grid-template-columns:repeat(4,1fr)}.hero h1{font-size:27px}.links a:not(.tel){display:none}.sm{padding:9px 10px}}`;
+function simple(statusCode,msg){return {statusCode,headers:{'Content-Type':'text/html; charset=utf-8'},body:`<!doctype html><meta charset="utf-8"><h1>${esc(msg)}</h1>`}}
